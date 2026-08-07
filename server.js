@@ -143,6 +143,26 @@ app.delete('/api/transactions/:id', (req, res) => {
   });
 });
 
+// Update transaction
+app.put('/api/transactions/:id', (req, res) => {
+  const { id } = req.params;
+  const { type, category, amount, date, description } = req.body;
+
+  if (!type || !category || !amount || !date) {
+    res.status(400).json({ error: 'Please provide all required fields' });
+    return;
+  }
+
+  const sql = 'UPDATE transactions SET type = ?, category = ?, amount = ?, date = ?, description = ? WHERE id = ?';
+  db.run(sql, [type, category, amount, date, description, id], function (err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({ message: 'Transaction updated successfully', changes: this.changes });
+  });
+});
+
 // Export database as CSV
 app.get('/api/export-csv', (req, res) => {
   db.all('SELECT id, type, category, amount, date, description FROM transactions ORDER BY date DESC', [], (err, rows) => {

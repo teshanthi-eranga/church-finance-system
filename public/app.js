@@ -81,6 +81,7 @@ const translations = {
     totalExpense: 'මුළු වියදම',
     netBalance: 'ඉතිරි ශේෂය',
     addTxTitle: '<i class="fa-solid fa-plus-circle"></i> අලුත් ගනුදෙනුවක් එක් කරන්න',
+    addTxTitleEdit: '<i class="fa-solid fa-pen-to-square"></i> ගනුදෙනුව සංස්කරණය කරන්න',
     txType: 'ගනුදෙනු වර්ගය',
     income: '<i class="fa-solid fa-circle-arrow-up"></i> ආදායම',
     donation: '<i class="fa-solid fa-hand-holding-heart"></i> පරිත්‍යාග',
@@ -92,6 +93,8 @@ const translations = {
     descriptionPlaceholder: 'ගනුදෙනුව පිළිබඳ කෙටි විස්තරයක් ඇතුළත් කරන්න...',
     categoryPlaceholder: 'තෝරන්න හෝ අලුත් එකක් ලියන්න...',
     saveBtn: '<i class="fa-solid fa-cloud-arrow-up"></i> සුරකින්න',
+    updateBtn: '<i class="fa-solid fa-pen-to-square"></i> යාවත්කාලීන කරන්න',
+    cancelBtn: 'අවලංගු කරන්න',
     chartTitle: '<i class="fa-solid fa-chart-pie"></i> වියදම් ප්‍රස්ථාර විශ්ලේෂණය',
     recordsTitle: '<i class="fa-solid fa-list"></i> ගනුදෙනු ලැයිස්තුව',
     thDate: 'දිනය',
@@ -120,6 +123,7 @@ const translations = {
     totalExpense: 'Total Expense',
     netBalance: 'Net Balance',
     addTxTitle: '<i class="fa-solid fa-plus-circle"></i> Add New Transaction',
+    addTxTitleEdit: '<i class="fa-solid fa-pen-to-square"></i> Edit Transaction',
     txType: 'Transaction Type',
     income: '<i class="fa-solid fa-circle-arrow-up"></i> Income',
     donation: '<i class="fa-solid fa-hand-holding-heart"></i> Donation',
@@ -131,6 +135,8 @@ const translations = {
     descriptionPlaceholder: 'Enter a short description of the transaction...',
     categoryPlaceholder: 'Select or type a custom category...',
     saveBtn: '<i class="fa-solid fa-cloud-arrow-up"></i> Save Transaction',
+    updateBtn: '<i class="fa-solid fa-pen-to-square"></i> Update Transaction',
+    cancelBtn: 'Cancel',
     chartTitle: '<i class="fa-solid fa-chart-pie"></i> Expense Category Breakdown',
     recordsTitle: '<i class="fa-solid fa-list"></i> Transaction Records',
     thDate: 'Date',
@@ -159,6 +165,7 @@ const translations = {
     totalExpense: 'මුළු වියදම (Total Expense)',
     netBalance: 'ශේෂය (Net Balance)',
     addTxTitle: '<i class="fa-solid fa-plus-circle"></i> අලුත් ගනුදෙනුවක් එක් කරන්න (Add New)',
+    addTxTitleEdit: '<i class="fa-solid fa-pen-to-square"></i> ගනුදෙනුව සංස්කරණය කරන්න (Edit)',
     txType: 'ගනුදෙනු වර්ගය (Transaction Type)',
     income: '<i class="fa-solid fa-circle-arrow-up"></i> ආදායම (Income)',
     donation: '<i class="fa-solid fa-hand-holding-heart"></i> පරිත්‍යාග (Donation)',
@@ -170,6 +177,8 @@ const translations = {
     descriptionPlaceholder: 'ගනුදෙනුව පිළිබඳ කෙටි විස්තරයක් ඇතුළත් කරන්න (Enter details)...',
     categoryPlaceholder: 'තෝරන්න හෝ අලුත් එකක් ලියන්න (Select or type)...',
     saveBtn: '<i class="fa-solid fa-cloud-arrow-up"></i> සුරකින්න (Save Transaction)',
+    updateBtn: '<i class="fa-solid fa-pen-to-square"></i> යාවත්කාලීන කරන්න (Update)',
+    cancelBtn: 'අවලංගු කරන්න (Cancel)',
     chartTitle: '<i class="fa-solid fa-chart-pie"></i> ප්‍රස්ථාර විශ්ලේෂණය (Expenses Chart)',
     recordsTitle: '<i class="fa-solid fa-list"></i> ගනුදෙනු ලැයිස්තුව (Transaction Records)',
     thDate: 'දිනය (Date)',
@@ -194,6 +203,7 @@ const translations = {
 // Global variables
 let expenseChartInstance = null;
 let currentLanguage = 'si';
+let editingTransactionId = null;
 
 // DOM Elements
 const typeIncomeRadio = document.getElementById('typeIncome');
@@ -303,8 +313,17 @@ function updateLanguageUI() {
   document.querySelector('.expense-card .card-header span').textContent = t.totalExpense;
   document.getElementById('balanceTitle').textContent = t.netBalance;
 
-  // Form
-  document.querySelector('.form-section .section-title').innerHTML = t.addTxTitle;
+  // Form (checks if editing)
+  if (editingTransactionId) {
+    document.querySelector('.form-section .section-title').innerHTML = t.addTxTitleEdit;
+    document.querySelector('#transactionForm button[type="submit"]').innerHTML = t.updateBtn;
+    const cancelBtn = document.getElementById('cancelEditBtn');
+    if (cancelBtn) cancelBtn.innerHTML = `<i class="fa-solid fa-xmark"></i> ${t.cancelBtn}`;
+  } else {
+    document.querySelector('.form-section .section-title').innerHTML = t.addTxTitle;
+    document.querySelector('#transactionForm button[type="submit"]').innerHTML = t.saveBtn;
+  }
+  
   document.querySelector('#transactionForm .form-group:nth-child(1) > label').textContent = t.txType;
   document.querySelector('.toggle-income').innerHTML = t.income;
   document.querySelector('.toggle-donation').innerHTML = t.donation;
@@ -315,7 +334,6 @@ function updateLanguageUI() {
   document.querySelector('#transactionForm .form-group:nth-child(4) > label').textContent = t.date;
   document.querySelector('#transactionForm .form-group:nth-child(5) > label').textContent = t.description;
   document.getElementById('description').placeholder = t.descriptionPlaceholder;
-  document.querySelector('#transactionForm button[type="submit"]').innerHTML = t.saveBtn;
 
   // Panels
   document.querySelector('.chart-panel .section-title').innerHTML = t.chartTitle;
@@ -463,7 +481,10 @@ function renderTransactionsTable(transactions) {
       <td><strong>${tx.description || '-'}</strong></td>
       <td><span class="badge">${catLabel}</span></td>
       <td class="text-right ${amtClass}">${sign} LKR ${amtStr}</td>
-      <td class="text-center">
+      <td class="text-center" style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
+        <button class="btn-edit-icon" onclick="startEditTransaction(${JSON.stringify(tx).replace(/"/g, '&quot;')})" title="${currentLanguage === 'si' ? 'සංස්කරණය කරන්න' : 'Edit'}">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </button>
         <button class="btn-danger-icon" onclick="deleteTransaction(${tx.id})" title="${currentLanguage === 'si' ? 'මකා දමන්න' : 'Delete'}">
           <i class="fa-solid fa-trash-can"></i>
         </button>
@@ -471,6 +492,70 @@ function renderTransactionsTable(transactions) {
     `;
     transactionsList.appendChild(tr);
   });
+}
+
+// Start Edit Mode
+function startEditTransaction(tx) {
+  editingTransactionId = tx.id;
+  
+  // Set form values
+  document.getElementById(`type${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}`).checked = true;
+  updateCategoryOptions(tx.type);
+  categoryInput.value = tx.category;
+  
+  document.getElementById('amount').value = tx.amount;
+  dateInput.value = tx.date;
+  document.getElementById('description').value = tx.description || '';
+  
+  // Update Form Header and Save Button to Edit Mode
+  const t = translations[currentLanguage];
+  document.querySelector('.form-section .section-title').innerHTML = t.addTxTitleEdit;
+  
+  const submitBtn = document.querySelector('#transactionForm button[type="submit"]');
+  
+  const oldCancel = document.getElementById('cancelEditBtn');
+  if (oldCancel) oldCancel.remove();
+
+  submitBtn.innerHTML = t.updateBtn;
+  submitBtn.className = 'btn btn-primary btn-block';
+  
+  // Insert a cancel button next to update button
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.id = 'cancelEditBtn';
+  cancelBtn.className = 'btn btn-secondary btn-block';
+  cancelBtn.style.marginTop = '0.5rem';
+  cancelBtn.innerHTML = `<i class="fa-solid fa-xmark"></i> ${t.cancelBtn}`;
+  cancelBtn.onclick = cancelEditTransaction;
+  
+  submitBtn.parentNode.appendChild(cancelBtn);
+  
+  // Scroll to form
+  document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Cancel Edit Mode
+function cancelEditTransaction() {
+  editingTransactionId = null;
+  
+  document.getElementById('amount').value = '';
+  document.getElementById('description').value = '';
+  categoryInput.value = '';
+  
+  const today = new Date().toISOString().split('T')[0];
+  dateInput.value = today;
+  
+  const t = translations[currentLanguage];
+  document.querySelector('.form-section .section-title').innerHTML = t.addTxTitle;
+  
+  const submitBtn = document.querySelector('#transactionForm button[type="submit"]');
+  submitBtn.innerHTML = t.saveBtn;
+  
+  const cancelBtn = document.getElementById('cancelEditBtn');
+  if (cancelBtn) cancelBtn.remove();
+  
+  const selectedType = document.querySelector('input[name="type"]:checked').value;
+  updateCategoryOptions(selectedType);
 }
 
 // Render Charts (Expenses Category Breakdown)
@@ -494,7 +579,6 @@ function renderCharts(categoriesData) {
   noChartDataMsg.style.display = 'none';
 
   const labels = expensesData.map(c => {
-    // Find the canonical value
     let canonicalValue = c.category;
     for (const lang of ['si', 'en', 'both']) {
       const allLangCats = categories[lang].expense;
@@ -505,7 +589,6 @@ function renderCharts(categoriesData) {
       }
     }
 
-    // Get current language equivalent
     const matchCurrent = categories[currentLanguage].expense.find(cat => cat.value === canonicalValue);
     return matchCurrent ? matchCurrent.label : c.category;
   });
@@ -571,18 +654,33 @@ async function handleFormSubmit(e) {
   const description = document.getElementById('description').value;
 
   try {
-    const res = await fetch('/api/transactions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ type, category, amount, date, description })
-    });
+    let res;
+    if (editingTransactionId) {
+      res = await fetch(`/api/transactions/${editingTransactionId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type, category, amount, date, description })
+      });
+    } else {
+      res = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type, category, amount, date, description })
+      });
+    }
 
     if (res.ok) {
-      categoryInput.value = '';
-      document.getElementById('amount').value = '';
-      document.getElementById('description').value = '';
+      if (editingTransactionId) {
+        cancelEditTransaction();
+      } else {
+        categoryInput.value = '';
+        document.getElementById('amount').value = '';
+        document.getElementById('description').value = '';
+      }
       
       const txDate = new Date(date);
       const txMonth = String(txDate.getMonth() + 1).padStart(2, '0');
