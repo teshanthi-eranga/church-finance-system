@@ -281,6 +281,18 @@ body {
   }
 }
 
+.main-content.table-only-mode {
+  grid-template-columns: 1fr !important;
+}
+
+.main-content.table-only-mode .form-section {
+  display: none !important;
+}
+
+.main-content.table-only-mode .chart-panel {
+  display: none !important;
+}
+
 /* Glass Panels */
 .glass-panel {
   background: var(--panel-bg);
@@ -716,4 +728,75 @@ input[id="typeExpense"]:checked + .toggle-expense {
     font-size: 14px;
     white-space: pre-wrap;
   }
+}
+
+/* File Upload Area Styling */
+.file-upload-wrapper {
+  position: relative;
+  width: 100%;
+  height: 80px;
+  border: 1.5px dashed var(--panel-border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.file-upload-wrapper:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--primary-color);
+}
+
+.file-upload-wrapper input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.file-upload-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  pointer-events: none;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.file-upload-trigger i {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+/* Transaction Type Badges in Tables */
+.type-badge-income {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  color: var(--income-color) !important;
+  border: 1px solid rgba(16, 185, 129, 0.25) !important;
+  margin-right: 0.35rem;
+  font-weight: 600;
+}
+.type-badge-donation {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+  color: var(--donation-color) !important;
+  border: 1px solid rgba(59, 130, 246, 0.25) !important;
+  margin-right: 0.35rem;
+  font-weight: 600;
+}
+.type-badge-expense {
+  background-color: rgba(244, 63, 94, 0.12) !important;
+  color: var(--expense-color) !important;
+  border: 1px solid rgba(244, 63, 94, 0.25) !important;
+  margin-right: 0.35rem;
+  font-weight: 600;
 }
