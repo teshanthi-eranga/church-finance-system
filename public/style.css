@@ -588,3 +588,132 @@ input[id="typeExpense"]:checked + .toggle-expense {
   width: auto !important;
   padding: 0.75rem 2rem 0.75rem 1rem !important;
 }
+
+/* Modal Overlay Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+}
+
+/* Print Layout rules */
+.print-only {
+  display: none;
+}
+
+@media print {
+  /* Hide all screen components */
+  body, html {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  .app-container, .app-footer, .background-decor, .modal-overlay {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  #printArea {
+    color: #000000 !important;
+    font-family: 'Outfit', sans-serif;
+    padding: 20px;
+  }
+  
+  .print-header {
+    text-align: center;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 15px;
+    margin-bottom: 30px;
+  }
+  
+  .print-header h1 {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+  
+  .print-header p {
+    font-size: 14px;
+    color: #555555;
+  }
+  
+  .print-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 35px;
+  }
+  
+  .print-card {
+    border: 1px solid #cccccc;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .print-card span {
+    font-size: 12px;
+    color: #555555;
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .print-card h3 {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  .print-chart-container {
+    text-align: center;
+    margin-bottom: 35px;
+  }
+  
+  .print-chart-image {
+    max-width: 250px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+    font-size: 13px;
+  }
+  
+  .print-table th, .print-table td {
+    border: 1px solid #cccccc;
+    padding: 8px 10px;
+    text-align: left;
+  }
+  
+  .print-table th {
+    background-color: #f3f4f6;
+    font-weight: bold;
+  }
+  
+  .print-table td.text-right {
+    text-align: right;
+  }
+  
+  .print-notes {
+    border-top: 1px dashed #aaaaaa;
+    padding-top: 20px;
+    margin-top: 50px;
+    font-size: 14px;
+    white-space: pre-wrap;
+  }
+}

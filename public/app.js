@@ -76,6 +76,7 @@ const translations = {
     title: 'පල්ලියේ මූල්‍ය කළමනාකරණය',
     subtitle: 'මූල්‍ය ද්වාරය',
     exportBtn: '<i class="fa-solid fa-file-csv"></i> දත්ත බාගත කරන්න (Backup)',
+    printBtn: '<i class="fa-solid fa-print"></i> වාර්තාව (Print)',
     totalIncome: 'මුළු ආදායම',
     totalDonations: 'මුළු පරිත්‍යාග',
     totalExpense: 'මුළු වියදම',
@@ -112,12 +113,24 @@ const translations = {
     statusLoss: 'වියදම් අධික මාසයකි',
     statusBalanced: 'සමබරයි',
     allMonths: 'සියලු මාස',
-    jan: 'ජනවාරි', feb: 'පෙබරවාරි', mar: 'මාර්තු', apr: 'අප්‍රේල්', may: 'මැයි', jun: 'ජූනි', jul: 'ජූලි', aug: 'අගෝස්තු', sep: 'සැප්තැම්බර්', oct: 'ඔක්තෝබර්', nov: 'නොවැම්බර්', dec: 'දෙසැම්බර්'
+    jan: 'ජනවාරි', feb: 'පෙබරවාරි', mar: 'මාර්තු', apr: 'අප්‍රේල්', may: 'මැයි', jun: 'ජූනි', jul: 'ජූලි', aug: 'අගෝස්තු', sep: 'සැප්තැම්බර්', oct: 'ඔක්තෝබර්', nov: 'නොවැම්බර්', dec: 'දෙසැම්බර්',
+    // Print Modal translations
+    printModalTitle: '<i class="fa-solid fa-gears"></i> වාර්තා මුද්‍රණ සැකසුම්',
+    printTitleLabel: 'වාර්තා ශීර්ෂය',
+    printTitleDefault: 'පල්ලියේ මූල්‍ය වාර්තාව',
+    printShowCardsLabel: 'සාරාංශ කාඩ්පත් ඇතුළත් කරන්න',
+    printShowChartLabel: 'වියදම් ප්‍රස්ථාරය ඇතුළත් කරන්න',
+    printShowTableLabel: 'ගනුදෙනු ලැයිස්තුව ඇතුළත් කරන්න',
+    printNotesLabel: 'විශේෂ සටහන් / අත්සන සඳහා ඉඩ',
+    printNotesPlaceholder: 'උදා: සභාපතිතුමාගේ අත්සන: ...................',
+    printCloseBtn: '<i class="fa-solid fa-xmark"></i> වසන්න',
+    printConfirmBtn: '<i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න'
   },
   en: {
     title: 'Church Finance Management',
     subtitle: 'Finance Portal',
     exportBtn: '<i class="fa-solid fa-file-csv"></i> Download CSV Backup',
+    printBtn: '<i class="fa-solid fa-print"></i> Print Report',
     totalIncome: 'Total Income',
     totalDonations: 'Total Donations',
     totalExpense: 'Total Expense',
@@ -154,12 +167,24 @@ const translations = {
     statusLoss: 'Deficit Month',
     statusBalanced: 'Balanced Month',
     allMonths: 'All Months',
-    jan: 'January', feb: 'February', mar: 'March', apr: 'April', may: 'May', jun: 'June', jul: 'July', aug: 'August', sep: 'September', oct: 'October', nov: 'November', dec: 'December'
+    jan: 'January', feb: 'February', mar: 'March', apr: 'April', may: 'May', jun: 'June', jul: 'July', aug: 'August', sep: 'September', oct: 'October', nov: 'November', dec: 'December',
+    // Print Modal translations
+    printModalTitle: '<i class="fa-solid fa-gears"></i> Report Print Settings',
+    printTitleLabel: 'Report Title',
+    printTitleDefault: 'Church Finance Report',
+    printShowCardsLabel: 'Include Summary Cards',
+    printShowChartLabel: 'Include Expense Chart',
+    printShowTableLabel: 'Include Transaction List',
+    printNotesLabel: 'Custom Notes / Signature Space',
+    printNotesPlaceholder: 'e.g. Signature of Parish Priest: ...................',
+    printCloseBtn: '<i class="fa-solid fa-xmark"></i> Close',
+    printConfirmBtn: '<i class="fa-solid fa-print"></i> Print'
   },
   both: {
     title: 'පල්ලියේ මූල්‍ය කළමනාකරණය (Church Finance)',
     subtitle: 'මූල්‍ය ද්වාරය (Finance Portal)',
     exportBtn: '<i class="fa-solid fa-file-csv"></i> දත්ත බාගත කරන්න (Backup CSV)',
+    printBtn: '<i class="fa-solid fa-print"></i> වාර්තාව (Print Report)',
     totalIncome: 'මුළු ආදායම (Total Income)',
     totalDonations: 'මුළු පරිත්‍යාග (Total Donations)',
     totalExpense: 'මුළු වියදම (Total Expense)',
@@ -196,7 +221,18 @@ const translations = {
     statusLoss: 'වියදම් අධික මාසයකි (Deficit)',
     statusBalanced: 'සමබරයි (Balanced)',
     allMonths: 'සියලු මාස (All Months)',
-    jan: 'ජනවාරි (January)', feb: 'පෙබරවාරි (February)', mar: 'මාර්තු (March)', apr: 'අප්‍රේල් (April)', may: 'මැයි (May)', jun: 'ජූනි (June)', jul: 'ජූලි (July)', aug: 'අගෝස්තු (August)', sep: 'සැප්තැම්බර් (September)', oct: 'ඔක්තෝබර් (October)', nov: 'නොවැම්බර් (November)', dec: 'දෙසැම්බර් (December)'
+    jan: 'ජනවාරි (January)', feb: 'පෙබරවාරි (February)', mar: 'මාර්තු (March)', apr: 'අප්‍රේල් (April)', may: 'මැයි (May)', jun: 'ජූනි (June)', jul: 'ජූලි (July)', aug: 'අගෝස්තු (August)', sep: 'සැප්තැම්බර් (September)', oct: 'ඔක්තෝබර් (October)', nov: 'නොවැම්බර් (November)', dec: 'දෙසැම්බර් (December)',
+    // Print Modal translations
+    printModalTitle: '<i class="fa-solid fa-gears"></i> වාර්තා මුද්‍රණ සැකසුම් (Print Settings)',
+    printTitleLabel: 'වාර්තා ශීර්ෂය (Report Title)',
+    printTitleDefault: 'පල්ලියේ මූල්‍ය වාර්තාව (Church Finance Report)',
+    printShowCardsLabel: 'සාරාංශ කාඩ්පත් ඇතුළත් කරන්න (Include Summary)',
+    printShowChartLabel: 'වියදම් ප්‍රස්ථාරය ඇතුළත් කරන්න (Include Chart)',
+    printShowTableLabel: 'ගනුදෙනු ලැයිස්තුව ඇතුළත් කරන්න (Include Records)',
+    printNotesLabel: 'විශේෂ සටහන් / අත්සන සඳහා ඉඩ (Custom Notes)',
+    printNotesPlaceholder: 'උදා: සභාපතිතුමාගේ අත්සන (Signature space): ...................',
+    printCloseBtn: '<i class="fa-solid fa-xmark"></i> වසන්න (Close)',
+    printConfirmBtn: '<i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print)'
   }
 };
 
@@ -204,6 +240,7 @@ const translations = {
 let expenseChartInstance = null;
 let currentLanguage = 'si';
 let editingTransactionId = null;
+let latestTransactions = [];
 
 // DOM Elements
 const typeIncomeRadio = document.getElementById('typeIncome');
@@ -217,6 +254,7 @@ const filterMonth = document.getElementById('filterMonth');
 const filterYear = document.getElementById('filterYear');
 const themeToggle = document.getElementById('themeToggle');
 const langSelect = document.getElementById('langSelect');
+const printReportBtn = document.getElementById('printReportBtn');
 
 const totalIncomeEl = document.getElementById('totalIncome');
 const totalDonationEl = document.getElementById('totalDonation');
@@ -230,6 +268,17 @@ const transactionsList = document.getElementById('transactionsList');
 const noRecordsMsg = document.getElementById('noRecordsMsg');
 const noChartDataMsg = document.getElementById('noChartData');
 const expenseChartCanvas = document.getElementById('expenseChart');
+
+// Print Modal Elements
+const printModal = document.getElementById('printModal');
+const cancelPrintBtn = document.getElementById('cancelPrintBtn');
+const confirmPrintBtn = document.getElementById('confirmPrintBtn');
+const printTitleInput = document.getElementById('printTitle');
+const printShowCardsCheck = document.getElementById('printShowCards');
+const printShowChartCheck = document.getElementById('printShowChart');
+const printShowTableCheck = document.getElementById('printShowTable');
+const printNotesInput = document.getElementById('printNotes');
+const printArea = document.getElementById('printArea');
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
@@ -288,6 +337,25 @@ langSelect.addEventListener('change', (e) => {
   loadDashboardData();
 });
 
+// Print Event Listeners
+printReportBtn.addEventListener('click', () => {
+  const t = translations[currentLanguage];
+  const selectedPeriod = filterMonth.options[filterMonth.selectedIndex].text + ' ' + filterYear.value;
+  
+  // Set default report title based on current selection
+  printTitleInput.value = `${t.printTitleDefault} - ${selectedPeriod}`;
+  printNotesInput.placeholder = t.printNotesPlaceholder;
+  
+  // Show modal
+  printModal.style.display = 'flex';
+});
+
+cancelPrintBtn.addEventListener('click', () => {
+  printModal.style.display = 'none';
+});
+
+confirmPrintBtn.addEventListener('click', executePrint);
+
 // Functions
 function updateCategoryOptions(type) {
   categoryList.innerHTML = '';
@@ -306,6 +374,7 @@ function updateLanguageUI() {
   document.querySelector('.logo-area h1').textContent = t.title;
   document.querySelector('.logo-area .subtitle').textContent = t.subtitle;
   document.getElementById('exportBtn').innerHTML = t.exportBtn;
+  document.getElementById('printReportBtn').innerHTML = t.printBtn;
 
   // Stats Grid labels
   document.querySelector('.income-card .card-header span').textContent = t.totalIncome;
@@ -365,6 +434,16 @@ function updateLanguageUI() {
   monthOpts[11].textContent = t.nov;
   monthOpts[12].textContent = t.dec;
 
+  // Print Modal elements translation
+  document.querySelector('#printModal h2').innerHTML = t.printModalTitle;
+  document.querySelector('#printModal label[for="printTitle"]').textContent = t.printTitleLabel;
+  document.querySelector('#printShowCards').parentNode.childNodes[2].textContent = ` ${t.printShowCardsLabel}`;
+  document.querySelector('#printShowChart').parentNode.childNodes[2].textContent = ` ${t.printShowChartLabel}`;
+  document.querySelector('#printShowTable').parentNode.childNodes[2].textContent = ` ${t.printShowTableLabel}`;
+  document.querySelector('#printModal label[for="printNotes"]').textContent = t.printNotesLabel;
+  document.getElementById('cancelPrintBtn').innerHTML = t.printCloseBtn;
+  document.getElementById('confirmPrintBtn').innerHTML = t.printConfirmBtn;
+
   // Default type selection category list reload
   const selectedType = document.querySelector('input[name="type"]:checked').value;
   updateCategoryOptions(selectedType);
@@ -397,6 +476,7 @@ async function loadDashboardData() {
     // 2. Fetch transactions list
     const listRes = await fetch(`/api/transactions${queryParams}`);
     const transactions = await listRes.json();
+    latestTransactions = transactions;
     renderTransactionsTable(transactions);
 
   } catch (error) {
@@ -640,6 +720,124 @@ function renderCharts(categoriesData) {
       }
     }
   });
+}
+
+// Generate Printable Report
+function executePrint() {
+  const selectedPeriod = filterMonth.options[filterMonth.selectedIndex].text + ' ' + filterYear.value;
+  
+  // Clear print area
+  printArea.innerHTML = '';
+  
+  // 1. Construct Header
+  let printHTML = `
+    <div class="print-header">
+      <h1>${printTitleInput.value}</h1>
+      <p>${currentLanguage === 'si' ? 'මුද්‍රිත දිනය' : 'Printed Date'}: ${new Date().toLocaleDateString()} | ${currentLanguage === 'si' ? 'කාල සීමාව' : 'Period'}: ${selectedPeriod}</p>
+    </div>
+  `;
+  
+  // 2. Add Stats Grid if checked
+  if (printShowCardsCheck.checked) {
+    printHTML += `
+      <div class="print-grid">
+        <div class="print-card">
+          <span>${currentLanguage === 'si' ? 'මුළු ආදායම' : 'Total Income'}</span>
+          <h3>${totalIncomeEl.textContent}</h3>
+        </div>
+        <div class="print-card">
+          <span>${currentLanguage === 'si' ? 'මුළු පරිත්‍යාග' : 'Total Donations'}</span>
+          <h3>${totalDonationEl.textContent}</h3>
+        </div>
+        <div class="print-card">
+          <span>${currentLanguage === 'si' ? 'මුළු වියදම' : 'Total Expense'}</span>
+          <h3>${totalExpenseEl.textContent}</h3>
+        </div>
+        <div class="print-card">
+          <span>${currentLanguage === 'si' ? 'ඉතිරි ශේෂය' : 'Net Balance'}</span>
+          <h3>${netBalanceEl.textContent}</h3>
+        </div>
+      </div>
+    `;
+  }
+  
+  // 3. Add Chart image if checked
+  if (printShowChartCheck.checked && expenseChartInstance) {
+    const chartImgUrl = expenseChartCanvas.toDataURL('image/png');
+    printHTML += `
+      <div class="print-chart-container">
+        <h4 style="margin-bottom: 10px;">${currentLanguage === 'si' ? 'වියදම් විශ්ලේෂණ ප්‍රස්ථාරය' : 'Expense Chart Breakdown'}</h4>
+        <img src="${chartImgUrl}" class="print-chart-image">
+      </div>
+    `;
+  }
+  
+  // 4. Add Transaction list table if checked
+  if (printShowTableCheck.checked) {
+    let tableHTML = `
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th>${currentLanguage === 'si' ? 'දිනය' : 'Date'}</th>
+            <th>${currentLanguage === 'si' ? 'විස්තරය' : 'Details'}</th>
+            <th>${currentLanguage === 'si' ? 'කාණ්ඩය' : 'Category'}</th>
+            <th class="text-right">${currentLanguage === 'si' ? 'මුදල' : 'Amount'}</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    if (latestTransactions.length === 0) {
+      tableHTML += `<tr><td colspan="4" style="text-align: center;">${currentLanguage === 'si' ? 'කිසිදු දත්තයක් නොමැත' : 'No records available'}</td></tr>`;
+    } else {
+      latestTransactions.forEach(tx => {
+        const isIncome = tx.type === 'income';
+        const isDonation = tx.type === 'donation';
+        const amtClass = isIncome ? 'inc-amt' : (isDonation ? 'don-amt' : 'exp-amt');
+        const sign = (isIncome || isDonation) ? '+' : '-';
+        const amtStr = tx.amount.toLocaleString('en-LK', { minimumFractionDigits: 2 });
+        
+        let canonicalValue = tx.category;
+        for (const lang of ['si', 'en', 'both']) {
+          const allLangCats = [...categories[lang].income, ...categories[lang].donation, ...categories[lang].expense];
+          const match = allLangCats.find(c => c.value === tx.category || c.label === tx.category);
+          if (match) {
+            canonicalValue = match.value;
+            break;
+          }
+        }
+        const currentLangCats = [...categories[currentLanguage].income, ...categories[currentLanguage].donation, ...categories[currentLanguage].expense];
+        const matchCurrent = currentLangCats.find(c => c.value === canonicalValue);
+        let catLabel = matchCurrent ? matchCurrent.label : tx.category;
+        
+        tableHTML += `
+          <tr>
+            <td>${tx.date}</td>
+            <td><strong>${tx.description || '-'}</strong></td>
+            <td>${catLabel}</td>
+            <td class="text-right ${amtClass}">${sign} LKR ${amtStr}</td>
+          </tr>
+        `;
+      });
+    }
+    
+    tableHTML += `</tbody></table>`;
+    printHTML += tableHTML;
+  }
+  
+  // 5. Add Custom Remarks/Notes
+  if (printNotesInput.value.trim() !== '') {
+    printHTML += `
+      <div class="print-notes">${printNotesInput.value.replace(/\n/g, '<br>')}</div>
+    `;
+  }
+  
+  // Insert to print area
+  printArea.innerHTML = printHTML;
+  
+  // Hide modal and trigger print
+  printModal.style.display = 'none';
+  window.print();
 }
 
 // Handle Form Submit
