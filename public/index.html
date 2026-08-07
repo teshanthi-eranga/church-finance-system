@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Church Finance Management System</title>
+  <meta name="description" content="A premium offline-first web portal for managing church income, expenses, and donations securely.">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css?v=2">
+</head>
+<body>
+  <div class="background-decor">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+  </div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="main-header">
+      <div class="logo-area">
+        <i class="fa-solid fa-church logo-icon"></i>
+        <div>
+          <h1>පල්ලියේ මූල්‍ය කළමනාකරණය</h1>
+          <p class="subtitle">Church Finance Portal</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <!-- Date Filter -->
+        <div class="filter-group">
+          <label for="filterYear" class="sr-only">Year</label>
+          <select id="filterYear">
+            <!-- Dynamically populated or static options -->
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2027">2027</option>
+          </select>
+
+          <label for="filterMonth" class="sr-only">Month</label>
+          <select id="filterMonth">
+            <option value="">සියලු මාස (All Months)</option>
+            <option value="01">ජනවාරි (January)</option>
+            <option value="02">පෙබරවාරි (February)</option>
+            <option value="03">මාර්තු (March)</option>
+            <option value="04">අප්‍රේල් (April)</option>
+            <option value="05">මැයි (May)</option>
+            <option value="06">ජූනි (June)</option>
+            <option value="07">ජූලි (July)</option>
+            <option value="08" selected>අගෝස්තු (August)</option>
+            <option value="09">සැප්තැම්බර් (September)</option>
+            <option value="10">ඔක්තෝබර් (October)</option>
+            <option value="11">නොවැම්බර් (November)</option>
+            <option value="12">දෙසැම්බර් (December)</option>
+          </select>
+        </div>
+
+        <button id="themeToggle" class="btn btn-secondary" title="වර්ණ සැකසුම් (Toggle Theme)">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+
+        <select id="langSelect" class="lang-select" title="භාෂාව මාරු කරන්න (Language Selector)">
+          <option value="si">සිංහල</option>
+          <option value="en">English</option>
+          <option value="both">Both (සිංහල / English)</option>
+        </select>
+
+        <a href="/api/export-csv" class="btn btn-secondary" id="exportBtn" download>
+          <i class="fa-solid fa-file-csv"></i> දත්ත බාගත කරන්න (Backup CSV)
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Stats Grid -->
+    <section class="stats-grid">
+      <div class="stat-card income-card">
+        <div class="card-header">
+          <span>මුළු ආදායම (Total Income)</span>
+          <div class="icon-wrap"><i class="fa-solid fa-arrow-trend-up"></i></div>
+        </div>
+        <h2 class="amount" id="totalIncome">LKR 0.00</h2>
+      </div>
+
+      <div class="stat-card donation-card">
+        <div class="card-header">
+          <span>මුළු පරිත්‍යාග (Total Donations)</span>
+          <div class="icon-wrap"><i class="fa-solid fa-hand-holding-heart"></i></div>
+        </div>
+        <h2 class="amount" id="totalDonation">LKR 0.00</h2>
+      </div>
+
+      <div class="stat-card expense-card">
+        <div class="card-header">
+          <span>මුළු වියදම (Total Expense)</span>
+          <div class="icon-wrap"><i class="fa-solid fa-arrow-trend-down"></i></div>
+        </div>
+        <h2 class="amount" id="totalExpense">LKR 0.00</h2>
+      </div>
+
+      <div class="stat-card balance-card" id="balanceCard">
+        <div class="card-header">
+          <span id="balanceTitle">ශේෂය (Net Balance)</span>
+          <div class="icon-wrap" id="balanceIconWrap"><i class="fa-solid fa-scale-balanced"></i></div>
+        </div>
+        <h2 class="amount" id="netBalance">LKR 0.00</h2>
+        <span class="status-badge" id="profitStatus">ගණනය කරමින්...</span>
+      </div>
+    </section>
+
+    <!-- Content Layout -->
+    <main class="main-content">
+      <!-- Left Column: Add Transaction Form -->
+      <section class="form-section glass-panel">
+        <h2 class="section-title"><i class="fa-solid fa-plus-circle"></i> අලුත් ගනුදෙනුවක් එක් කරන්න</h2>
+        
+        <form id="transactionForm">
+          <!-- Type Toggle -->
+          <div class="form-group">
+            <label>ගනුදෙනු වර්ගය (Transaction Type)</label>
+            <div class="type-toggle-container">
+              <input type="radio" id="typeIncome" name="type" value="income" checked>
+              <label for="typeIncome" class="toggle-btn toggle-income">
+                <i class="fa-solid fa-circle-arrow-up"></i> ආදායම
+              </label>
+
+              <input type="radio" id="typeDonation" name="type" value="donation">
+              <label for="typeDonation" class="toggle-btn toggle-donation">
+                <i class="fa-solid fa-hand-holding-heart"></i> පරිත්‍යාග
+              </label>
+
+              <input type="radio" id="typeExpense" name="type" value="expense">
+              <label for="typeExpense" class="toggle-btn toggle-expense">
+                <i class="fa-solid fa-circle-arrow-down"></i> වියදම
+              </label>
+            </div>
+          </div>
+
+          <!-- Category Selection -->
+          <div class="form-group">
+            <label for="category">කාණ්ඩය (Category)</label>
+            <input type="text" id="category" list="categoryList" placeholder="තෝරන්න හෝ අලුත් එකක් ලියන්න..." required autocomplete="off">
+            <datalist id="categoryList">
+              <!-- Dynamically populated options -->
+            </datalist>
+          </div>
+
+          <!-- Amount -->
+          <div class="form-group">
+            <label for="amount">මුදල LKR (Amount)</label>
+            <input type="number" id="amount" placeholder="0.00" step="0.01" min="0.01" required>
+          </div>
+
+          <!-- Date -->
+          <div class="form-group">
+            <label for="date">දිනය (Date)</label>
+            <input type="date" id="date" required>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label for="description">විස්තරය (Description)</label>
+            <textarea id="description" placeholder="ගනුදෙනුව පිළිබඳ කෙටි විස්තරයක් ඇතුළත් කරන්න..." rows="3"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-cloud-arrow-up"></i> සුරකින්න (Save Transaction)
+          </button>
+        </form>
+      </section>
+
+      <!-- Right Column: Graphs & Records -->
+      <section class="records-section">
+        <!-- Chart Panel -->
+        <div class="chart-panel glass-panel">
+          <h2 class="section-title"><i class="fa-solid fa-chart-pie"></i> ප්‍රස්ථාර විශ්ලේෂණය (Expenses Chart)</h2>
+          <div class="chart-container">
+            <canvas id="expenseChart"></canvas>
+            <div id="noChartData" class="no-data-msg" style="display: none;">
+              <i class="fa-solid fa-chart-line"></i> මෙම මාසය සඳහා දත්ත නොමැත
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Records Table -->
+        <div class="records-panel glass-panel">
+          <h2 class="section-title"><i class="fa-solid fa-list"></i> ගනුදෙනු ලැයිස්තුව (Transaction Records)</h2>
+          <div class="records-list-wrapper">
+            <table class="records-table">
+              <thead>
+                <tr>
+                  <th>දිනය (Date)</th>
+                  <th>විස්තරය (Details)</th>
+                  <th>කාණ්ඩය (Category)</th>
+                  <th class="text-right">මුදල (Amount)</th>
+                  <th class="text-center">ක්‍රියා (Action)</th>
+                </tr>
+              </thead>
+              <tbody id="transactionsList">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+            <div id="noRecordsMsg" class="no-data-msg" style="display: none;">
+              <i class="fa-regular fa-folder-open"></i> ඇතුළත් කළ ගනුදෙනු කිසිවක් නොමැත.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="app-footer">
+    <p>© 2026 Church Finance Management Portal. Offline Server Secured.</p>
+  </footer>
+
+  <!-- App logic script -->
+  <script src="app.js"></script>
+</body>
+</html>

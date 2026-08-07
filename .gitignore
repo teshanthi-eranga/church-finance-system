@@ -1,0 +1,4 @@
+node_modules/
+church_finance.db
+.DS_Store
+*.log
