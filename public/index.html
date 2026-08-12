@@ -217,29 +217,21 @@
         <div class="records-panel glass-panel">
           <div class="panel-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
             <h2 class="section-title" id="recordsTitle" style="margin-bottom: 0;"><i class="fa-solid fa-list"></i> ගනුදෙනු ලැයිස්තුව (Transaction Records)</h2>
-            <button id="toggleViewBtn" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; margin: 0; min-height: unset; width: auto; display: flex; align-items: center; gap: 0.35rem;">
-              <i class="fa-solid fa-expand"></i> <span id="toggleViewBtnText">වගුව පමණක් (Table Only)</span>
-            </button>
-          </div>
-          <div class="records-list-wrapper">
-            <table class="records-table">
-              <thead>
-                <tr>
-                  <th>දිනය (Date)</th>
-                  <th>වර්ගය (Type)</th>
-                  <th>විස්තරය (Details)</th>
-                  <th>කාණ්ඩය (Category)</th>
-                  <th class="text-right">මුදල (Amount)</th>
-                  <th class="text-center">ක්‍රියා (Action)</th>
-                </tr>
-              </thead>
-              <tbody id="transactionsList">
-                <!-- Loaded dynamically -->
-              </tbody>
-            </table>
-            <div id="noRecordsMsg" class="no-data-msg" style="display: none;">
-              <i class="fa-regular fa-folder-open"></i> ඇතුළත් කළ ගනුදෙනු කිසිවක් නොමැත.
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <select id="tableViewModeSelect" class="lang-select" style="padding: 0.4rem 2.2rem 0.4rem 0.8rem !important; font-size: 0.85rem; margin: 0; min-height: unset; width: auto !important; border: 1px solid var(--panel-border); background-color: var(--input-bg);">
+                <option value="single">එක් වගුවක් (Single Table)</option>
+                <option value="separate">වෙන වෙනම (Separate)</option>
+              </select>
+              <button id="toggleViewBtn" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; margin: 0; min-height: unset; width: auto; display: flex; align-items: center; gap: 0.35rem;">
+                <i class="fa-solid fa-expand"></i> <span id="toggleViewBtnText">වගුව පමණක් (Table Only)</span>
+              </button>
             </div>
+          </div>
+          <div id="tablesContainer">
+            <!-- 3 separate grouped tables generated dynamically by JS -->
+          </div>
+          <div id="noRecordsMsg" class="no-data-msg" style="display: none;">
+            <i class="fa-regular fa-folder-open"></i> ඇතුළත් කළ ගනුදෙනු කිසිවක් නොමැත.
           </div>
         </div>
       </section>

@@ -509,7 +509,7 @@ input[id="typeExpense"]:checked + .toggle-expense {
 
 /* Table Style */
 .records-list-wrapper {
-  max-height: 400px;
+  max-height: none;
   overflow-y: auto;
   border-radius: var(--radius-md);
   border: 1px solid var(--panel-border);
@@ -519,29 +519,114 @@ input[id="typeExpense"]:checked + .toggle-expense {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  table-layout: fixed;
+}
+
+/* Fixed Column Widths */
+.records-table th:nth-child(1),
+.records-table td:nth-child(1) {
+  width: 15%;
+}
+
+.records-table th:nth-child(2),
+.records-table td:nth-child(2) {
+  width: 35%;
+}
+
+.records-table th:nth-child(3),
+.records-table td:nth-child(3) {
+  width: 22%;
+}
+
+.records-table th:nth-child(4),
+.records-table td:nth-child(4) {
+  width: 18%;
+}
+
+.records-table th:nth-child(5),
+.records-table td:nth-child(5) {
+  width: 10%;
 }
 
 .records-table th {
   background: var(--table-header-bg);
-  padding: 0.85rem 1rem;
+  padding: 0.7rem 0.85rem;
   font-weight: 600;
+  font-size: 0.8rem;
   color: var(--text-secondary);
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid var(--panel-border);
+  border-bottom: 2px solid var(--panel-border);
+  border-right: 1px solid var(--panel-border);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.records-table th:last-child {
+  border-right: none;
 }
 
 .records-table td {
-  padding: 0.85rem 1rem;
+  padding: 0.7rem 0.85rem;
   border-bottom: 1px solid var(--panel-border);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
   color: var(--text-primary);
   font-feature-settings: "tnum";
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.records-table tr:hover {
-  background: rgba(255, 255, 255, 0.02);
+.records-table td:last-child {
+  border-right: none;
+}
+
+/* Zebra striping */
+.records-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.records-table tbody tr:hover {
+  background: rgba(99, 102, 241, 0.08);
+  transition: background-color 0.15s ease;
+}
+
+/* Light theme overrides */
+body.light-theme .records-table td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .records-table tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+body.light-theme .records-table tbody tr:hover {
+  background: rgba(99, 102, 241, 0.06);
+}
+
+/* Row number styling */
+.row-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+body.light-theme .row-num {
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .text-right {
@@ -559,13 +644,34 @@ input[id="typeExpense"]:checked + .toggle-expense {
 }
 
 .don-amt {
-  color: #f59e0b;
+  color: #3b82f6;
   font-weight: 600;
 }
 
 .exp-amt {
   color: var(--expense-color);
   font-weight: 600;
+}
+
+/* Badge styling improvements */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--panel-border);
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.light-theme .badge {
+  background: rgba(0, 0, 0, 0.04);
 }
 
 /* Footer */
@@ -640,93 +746,251 @@ input[id="typeExpense"]:checked + .toggle-expense {
   #printArea {
     color: #000000 !important;
     font-family: 'Outfit', sans-serif;
-    padding: 20px;
+    padding: 15px 25px;
+    font-size: 13px;
   }
-  
-  .print-header {
+
+  /* ═══ P&L Header ═══ */
+  .pnl-header {
     text-align: center;
-    border-bottom: 2px solid #000000;
-    padding-bottom: 15px;
-    margin-bottom: 30px;
+    padding: 20px 15px 15px;
+    border: 2px solid #000000;
+    margin-bottom: 0;
   }
-  
-  .print-header h1 {
-    font-size: 24px;
-    margin-bottom: 5px;
+
+  .pnl-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
   }
-  
-  .print-header p {
-    font-size: 14px;
+
+  .pnl-header .pnl-subtitle {
+    font-size: 11px;
     color: #555555;
+    margin-bottom: 12px;
+    line-height: 1.4;
   }
-  
-  .print-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin-bottom: 35px;
-  }
-  
-  .print-card {
-    border: 1px solid #cccccc;
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
-  }
-  
-  .print-card span {
-    font-size: 12px;
-    color: #555555;
-    display: block;
-    margin-bottom: 5px;
-  }
-  
-  .print-card h3 {
+
+  .pnl-header h2 {
     font-size: 18px;
-    font-weight: bold;
-    margin: 0;
+    font-weight: 700;
+    margin-bottom: 4px;
+    text-decoration: underline;
+  }
+
+  .pnl-header .pnl-period {
+    font-size: 13px;
+    color: #333333;
+    margin-top: 4px;
+  }
+
+  /* ═══ P&L Main Table ═══ */
+  .pnl-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid #000000;
+    border-top: none;
+    font-size: 13px;
+  }
+
+  .pnl-table td {
+    padding: 6px 12px;
+    border: none;
+    vertical-align: top;
+  }
+
+  /* Section header rows (Income, Donations, Expenses) */
+  .pnl-section-row td {
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 12px 6px;
+    border-top: 2px solid #000000;
+    border-bottom: 1px solid #cccccc;
+    background-color: #f3f4f6;
   }
   
-  .print-chart-container {
+  .pnl-section-income td {
+    background-color: #ecfdf5 !important;
+    color: #065f46 !important;
+    border-top: 2px solid #10b981 !important;
+  }
+  
+  .pnl-section-donation td {
+    background-color: #eff6ff !important;
+    color: #1e40af !important;
+    border-top: 2px solid #3b82f6 !important;
+  }
+  
+  .pnl-section-expense td {
+    background-color: #fef2f2 !important;
+    color: #991b1b !important;
+    border-top: 2px solid #ef4444 !important;
+  }
+
+  /* Column headers row */
+  .pnl-col-header td {
+    font-weight: 600;
+    font-size: 11px;
+    color: #555555;
+    padding: 4px 12px;
+    border-bottom: 1px solid #dddddd;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Individual category/item rows */
+  .pnl-item-row td {
+    padding: 5px 12px 5px 24px;
+    font-size: 12.5px;
+    border-bottom: 1px dotted #eeeeee;
+  }
+
+  .pnl-item-row td:last-child,
+  .pnl-item-row td:nth-child(2) {
+    text-align: right;
+    font-feature-settings: "tnum";
+    padding-right: 15px;
+  }
+
+  /* Subtotal rows (Total Income, Total Expense etc.) */
+  .pnl-subtotal-row td {
+    font-weight: 700;
+    padding: 8px 12px;
+    border-top: 1.5px solid #000000;
+    border-bottom: 1px solid #000000;
+    font-size: 13px;
+  }
+  
+  .pnl-subtotal-income td {
+    color: #065f46 !important;
+  }
+  
+  .pnl-subtotal-donation td {
+    color: #1e40af !important;
+  }
+  
+  .pnl-subtotal-expense td {
+    color: #991b1b !important;
+  }
+
+  .pnl-subtotal-row td:last-child {
+    text-align: right;
+    padding-right: 15px;
+    font-feature-settings: "tnum";
+  }
+
+  /* Grand total / Profit-Loss row */
+  .pnl-grand-total td {
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 12px;
+    border-top: 3px double #000000;
+    border-bottom: 3px double #000000;
+    background-color: #f9fafb;
+  }
+  
+  .pnl-grand-total.profit-positive td {
+    background-color: #f0fdf4 !important;
+    color: #166534 !important;
+    border-top: 3px double #16a34a !important;
+    border-bottom: 3px double #16a34a !important;
+  }
+  
+  .pnl-grand-total.profit-negative td {
+    background-color: #fef2f2 !important;
+    color: #991b1b !important;
+    border-top: 3px double #dc2626 !important;
+    border-bottom: 3px double #dc2626 !important;
+  }
+
+  .pnl-grand-total td:last-child {
+    text-align: right;
+    padding-right: 15px;
+    font-feature-settings: "tnum";
+  }
+
+  /* Spacer row between sections */
+  .pnl-spacer td {
+    padding: 4px;
+    border: none;
+  }
+
+  /* Notes/Signature */
+  .pnl-notes {
+    border-top: 1px dashed #aaaaaa;
+    padding-top: 20px;
+    margin-top: 40px;
+    font-size: 13px;
+    white-space: pre-wrap;
+  }
+
+  /* Chart in print */
+  .pnl-chart-container {
     text-align: center;
-    margin-bottom: 35px;
+    margin: 20px 0 25px;
+    page-break-inside: avoid;
   }
-  
-  .print-chart-image {
+
+  .pnl-chart-container img {
     max-width: 250px;
     height: auto;
     display: block;
     margin: 0 auto;
   }
-  
-  .print-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 40px;
-    font-size: 13px;
+
+  /* Receipts appendix */
+  .pnl-receipts-section {
+    page-break-before: always;
+    margin-top: 30px;
   }
-  
-  .print-table th, .print-table td {
+
+  .pnl-receipts-title {
+    border-bottom: 2px solid #000000;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
+
+  .pnl-receipts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .pnl-receipt-card {
     border: 1px solid #cccccc;
-    padding: 8px 10px;
-    text-align: left;
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    page-break-inside: avoid;
+    background-color: #fafafa;
   }
-  
-  .print-table th {
-    background-color: #f3f4f6;
+
+  .pnl-receipt-card p {
+    font-size: 11px;
+    margin-bottom: 8px;
     font-weight: bold;
+    color: #333333;
   }
-  
-  .print-table td.text-right {
-    text-align: right;
+
+  .pnl-receipt-card img {
+    max-width: 100%;
+    max-height: 280px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+    border: 1px solid #eeeeee;
   }
-  
-  .print-notes {
-    border-top: 1px dashed #aaaaaa;
-    padding-top: 20px;
-    margin-top: 50px;
-    font-size: 14px;
-    white-space: pre-wrap;
+
+  /* Print timestamp footer */
+  .pnl-footer {
+    text-align: center;
+    font-size: 10px;
+    color: #999999;
+    margin-top: 30px;
+    padding-top: 10px;
+    border-top: 1px solid #eeeeee;
   }
 }
 
@@ -799,4 +1063,187 @@ input[id="typeExpense"]:checked + .toggle-expense {
   border: 1px solid rgba(244, 63, 94, 0.25) !important;
   margin-right: 0.35rem;
   font-weight: 600;
+}
+
+/* Donation color variable */
+:root {
+  --donation-color: #3b82f6;
+  --donation-light: rgba(59, 130, 246, 0.1);
+  --radius-sm: 8px;
+}
+
+/* Grouped Table Sections */
+.grouped-table-section {
+  margin-bottom: 1.25rem;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--panel-border);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.grouped-table-section:hover {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+}
+
+.grouped-table-section:last-child {
+  margin-bottom: 0;
+}
+
+.grouped-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.1rem;
+  background: linear-gradient(135deg, var(--table-header-bg) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border-left: 4.5px solid var(--primary-color);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.grouped-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.grouped-header-left i {
+  font-size: 1rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.grouped-header-count {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.18rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid var(--panel-border);
+  font-weight: 500;
+}
+
+.grouped-table-section .records-list-wrapper {
+  max-height: none;
+  border: none;
+  border-radius: 0;
+}
+
+.grouped-table-section .records-table {
+  border-radius: 0;
+}
+
+/* Single Table Mode Additions */
+.single-table-wrapper {
+  margin-top: 1rem;
+}
+
+.single-table-section-header td {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+  padding: 0.8rem 1rem !important;
+  border-top: 3px solid var(--panel-border) !important;
+  border-bottom: 2px solid var(--panel-border) !important;
+}
+
+body.light-theme .single-table-section-header td {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.01) 100%);
+}
+
+.single-table-section-header.group-header-income td {
+  border-left: 4.5px solid var(--income-color);
+}
+
+.single-table-section-header.group-header-donation td {
+  border-left: 4.5px solid #3b82f6;
+}
+
+.single-table-section-header.group-header-expense td {
+  border-left: 4.5px solid var(--expense-color);
+}
+
+.single-table-total-row td {
+  background: var(--table-header-bg) !important;
+  border-top: 2px solid var(--panel-border) !important;
+  border-bottom: 2px solid var(--panel-border) !important;
+  padding: 0.75rem 0.85rem !important;
+  font-size: 0.9rem;
+}
+
+/* Total Row at bottom of each grouped table (legacy) */
+.total-row {
+  background: var(--table-header-bg) !important;
+  border-top: 2px solid var(--panel-border) !important;
+}
+
+.total-row:hover {
+  background: var(--table-header-bg) !important;
+}
+
+.total-row td {
+  padding: 0.75rem 0.85rem !important;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.total-row .total-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+/* Light theme grouped header overrides */
+body.light-theme .grouped-header-left i {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+body.light-theme .grouped-header-count {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Print layout: grouped tables */
+@media print {
+  .print-grouped-section {
+    margin-bottom: 25px;
+    page-break-inside: avoid;
+  }
+  
+  .print-grouped-header {
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 12px;
+    background-color: #f3f4f6;
+    border-left: 4px solid #999999;
+    margin-bottom: 0;
+  }
+  
+  .print-grouped-header.income-header {
+    border-left-color: #10b981;
+    color: #065f46;
+  }
+  
+  .print-grouped-header.donation-header {
+    border-left-color: #3b82f6;
+    color: #1e40af;
+  }
+  
+  .print-grouped-header.expense-header {
+    border-left-color: #ef4444;
+    color: #991b1b;
+  }
+  
+  .print-total-row {
+    background-color: #f9fafb !important;
+    font-weight: bold;
+  }
+  
+  .print-total-row td {
+    border-top: 2px solid #999999 !important;
+    padding: 10px !important;
+  }
 }

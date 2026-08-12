@@ -283,10 +283,15 @@ app.get('/api/export-csv', (req, res) => {
       return;
     }
 
+    // Groups
+    const incomeRows = [];
+    const donationRows = [];
+    const expenseRows = [];
+    let totalIncome = 0;
+    let totalDonation = 0;
+    let totalExpense = 0;
+
     rows.forEach(row => {
-      const typeLabel = typeMap[lang]?.[row.type] || row.type;
-      
-      // Find canonical category key
       let canonicalCat = row.category;
       for (const catKey of Object.keys(catMap)) {
         if (catKey === row.category || catMap[catKey].si === row.category || catMap[catKey].en === row.category || catMap[catKey].both === row.category) {
@@ -295,17 +300,62 @@ app.get('/api/export-csv', (req, res) => {
         }
       }
       const catLabel = catMap[canonicalCat]?.[lang] || row.category;
-      
       const desc = row.description ? row.description.replace(/"/g, '""') : '';
-      csvContent += `${row.id},${typeLabel},"${catLabel}",${row.amount},${row.date},"${desc}","${row.receipt || ''}"\n`;
+      const csvLine = `${row.id},"${catLabel}",${row.amount},${row.date},"${desc}","${row.receipt || ''}"\n`;
+
+      if (row.type === 'income') {
+        incomeRows.push(csvLine);
+        totalIncome += row.amount;
+      } else if (row.type === 'donation') {
+        donationRows.push(csvLine);
+        totalDonation += row.amount;
+      } else if (row.type === 'expense') {
+        expenseRows.push(csvLine);
+        totalExpense += row.amount;
+      }
     });
 
-    // Prevent aggressive browser caching of downloads
+    const net = (totalIncome + totalDonation) - totalExpense;
+
+    // Headers config
+    let tIncome = 'INCOME', tDonation = 'DONATIONS', tExpense = 'EXPENSES', tNet = 'NET PROFIT / LOSS', tTotal = 'Total';
+    let tHeader = 'ID,Category,Amount (LKR),Date,Description,ReceiptFile\n';
+    
+    if (lang === 'si') {
+      tIncome = 'ආදායම'; tDonation = 'පරිත්‍යාග'; tExpense = 'වියදම්'; tNet = 'ශුද්ධ ලාභය / අලාභය'; tTotal = 'මුළු';
+      tHeader = 'අනුක්‍රමික අංකය,කාණ්ඩය,මුදල (LKR),දිනය,විස්තරය,ලදුපත\n';
+    } else if (lang === 'both') {
+      tIncome = 'ආදායම (INCOME)'; tDonation = 'පරිත්‍යාග (DONATIONS)'; tExpense = 'වියදම් (EXPENSES)'; tNet = 'ශුද්ධ ලාභය / අලාභය (NET BALANCE)'; tTotal = 'Total';
+      tHeader = 'ID,කාණ්ඩය (Category),මුදල LKR (Amount),දිනය (Date),විස්තරය (Description),ලදුපත (Receipt)\n';
+    }
+
+    let finalCsv = '';
+    
+    // Income Section
+    finalCsv += `--- ${tIncome} ---\n`;
+    finalCsv += tHeader;
+    incomeRows.forEach(r => finalCsv += r);
+    finalCsv += `,,${tTotal} ${tIncome}:,${totalIncome},,\n\n`;
+
+    // Donation Section
+    finalCsv += `--- ${tDonation} ---\n`;
+    finalCsv += tHeader;
+    donationRows.forEach(r => finalCsv += r);
+    finalCsv += `,,${tTotal} ${tDonation}:,${totalDonation},,\n\n`;
+
+    // Expense Section
+    finalCsv += `--- ${tExpense} ---\n`;
+    finalCsv += tHeader;
+    expenseRows.forEach(r => finalCsv += r);
+    finalCsv += `,,${tTotal} ${tExpense}:,${totalExpense},,\n\n`;
+
+    // Net
+    finalCsv += `=== ${tNet} ===,,,${net},,\n`;
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     // Set utf-8 BOM for Excel to open Sinhala characters correctly! (BOM is \ufeff)
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename=church_finance_backup_${lang}.csv`);
-    res.status(200).send('\ufeff' + csvContent);
+    res.status(200).send('\ufeff' + finalCsv);
   });
 });
 

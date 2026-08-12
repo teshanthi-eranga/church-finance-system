@@ -329,7 +329,7 @@ const balanceCard = document.getElementById('balanceCard');
 const balanceIconWrap = document.getElementById('balanceIconWrap');
 const profitStatusEl = document.getElementById('profitStatus');
 
-const transactionsList = document.getElementById('transactionsList');
+const tablesContainer = document.getElementById('tablesContainer');
 const noRecordsMsg = document.getElementById('noRecordsMsg');
 const noChartDataMsg = document.getElementById('noChartData');
 const expenseChartCanvas = document.getElementById('expenseChart');
@@ -420,6 +420,15 @@ langSelect.addEventListener('change', (e) => {
   updateLanguageUI();
   loadDashboardData();
 });
+
+  // Table View Mode toggle listener
+  const tableViewModeSelect = document.getElementById('tableViewModeSelect');
+  if (tableViewModeSelect) {
+    tableViewModeSelect.addEventListener('change', (e) => {
+      tableViewMode = e.target.value;
+      renderTransactionsTable(latestTransactions);
+    });
+  }
 
 chartTypeSelect.addEventListener('change', () => {
   renderCharts(latestTotals);
@@ -612,16 +621,7 @@ function updateLanguageUI() {
   document.getElementById('chartTitle').innerHTML = t.chartTitle;
   document.getElementById('recordsTitle').innerHTML = t.recordsTitle;
 
-  // Table Headers
-  const ths = document.querySelectorAll('.records-table th');
-  if (ths.length >= 6) {
-    ths[0].textContent = t.thDate;
-    ths[1].textContent = t.thType;
-    ths[2].textContent = t.thDesc;
-    ths[3].textContent = t.thCat;
-    ths[4].textContent = t.thAmt;
-    ths[5].textContent = t.thAct;
-  }
+  // Table headers are now generated dynamically in renderTransactionsTable
 
   // Month select options
   const monthOpts = filterMonth.options;
@@ -745,84 +745,340 @@ function updateSummaryCards(totals) {
   }
 }
 
-// Render Table
+let tableViewMode = 'single'; // default
+
 function renderTransactionsTable(transactions) {
   const t = translations[currentLanguage];
-  transactionsList.innerHTML = '';
+  tablesContainer.innerHTML = '';
   
   if (transactions.length === 0) {
-    noRecordsMsg.innerHTML = t.noRecords;
     noRecordsMsg.style.display = 'block';
     return;
   }
-  
   noRecordsMsg.style.display = 'none';
 
-  transactions.forEach(tx => {
-    const tr = document.createElement('tr');
-    
-    // Format LKR without symbol in tables to keep it neat
-    const amtStr = tx.amount.toLocaleString('en-LK', { minimumFractionDigits: 2 });
-    const isIncome = tx.type === 'income';
-    const isDonation = tx.type === 'donation';
-    const amtClass = isIncome ? 'inc-amt' : (isDonation ? 'don-amt' : 'exp-amt');
-    const sign = (isIncome || isDonation) ? '+' : '-';
+  const groups = { income: [], donation: [], expense: [] };
+  transactions.forEach(tx => groups[tx.type].push(tx));
 
-    // Highlight border left style based on transaction type
-    let borderStyle = '';
-    let typeBadge = '';
-    if (isIncome) {
-      borderStyle = 'border-left: 4.5px solid var(--income-color);';
-      typeBadge = `<span class="badge type-badge-income"><i class="fa-solid fa-arrow-trend-up"></i> ${t.badgeIncome}</span>`;
-    } else if (isDonation) {
-      borderStyle = 'border-left: 4.5px solid var(--donation-color);';
-      typeBadge = `<span class="badge type-badge-donation"><i class="fa-solid fa-hand-holding-heart"></i> ${t.badgeDonation}</span>`;
-    } else {
-      borderStyle = 'border-left: 4.5px solid var(--expense-color);';
-      typeBadge = `<span class="badge type-badge-expense"><i class="fa-solid fa-arrow-trend-down"></i> ${t.badgeExpense}</span>`;
+  const groupConfig = [
+    {
+      type: 'income',
+      icon: 'fa-arrow-trend-up',
+      color: 'var(--income-color)',
+      headerLabel: currentLanguage === 'si' ? 'ආදායම් ලැයිස්තුව' : (currentLanguage === 'en' ? 'Income Records' : 'ආදායම් ලැයිස්තුව (Income)'),
+      amtClass: 'inc-amt',
+      sign: '+',
+      totalLabel: currentLanguage === 'si' ? 'මුළු ආදායම' : (currentLanguage === 'en' ? 'Total Income' : 'මුළු ආදායම (Total Income)')
+    },
+    {
+      type: 'donation',
+      icon: 'fa-hand-holding-heart',
+      color: '#3b82f6',
+      headerLabel: currentLanguage === 'si' ? 'පරිත්‍යාග ලැයිස්තුව' : (currentLanguage === 'en' ? 'Donation Records' : 'පරිත්‍යාග ලැයිස්තුව (Donations)'),
+      amtClass: 'don-amt',
+      sign: '+',
+      totalLabel: currentLanguage === 'si' ? 'මුළු පරිත්‍යාග' : (currentLanguage === 'en' ? 'Total Donations' : 'මුළු පරිත්‍යාග (Total Donations)')
+    },
+    {
+      type: 'expense',
+      icon: 'fa-arrow-trend-down',
+      color: 'var(--expense-color)',
+      headerLabel: currentLanguage === 'si' ? 'වියදම් ලැයිස්තුව' : (currentLanguage === 'en' ? 'Expense Records' : 'වියදම් ලැයිස්තුව (Expenses)'),
+      amtClass: 'exp-amt',
+      sign: '-',
+      totalLabel: currentLanguage === 'si' ? 'මුළු වියදම' : (currentLanguage === 'en' ? 'Total Expense' : 'මුළු වියදම (Total Expense)')
     }
+  ];
 
-    // Find the canonical category value by looking up in any language array
-    let canonicalValue = tx.category;
-    for (const lang of ['si', 'en', 'both']) {
-      const allLangCats = [...categories[lang].income, ...categories[lang].donation, ...categories[lang].expense];
-      const match = allLangCats.find(c => c.value === tx.category || c.label === tx.category);
-      if (match) {
-        canonicalValue = match.value;
-        break;
-      }
-    }
+  let grandTotalIncome = 0;
+  let grandTotalExpense = 0;
 
-    // Translate display category to current active language
-    const currentLangCats = [...categories[currentLanguage].income, ...categories[currentLanguage].donation, ...categories[currentLanguage].expense];
-    const matchCurrent = currentLangCats.find(c => c.value === canonicalValue);
-    
-    let catLabel = matchCurrent ? matchCurrent.label : tx.category;
+  if (tableViewMode === 'single') {
+    // ----------------------------------------------------
+    // SINGLE TABLE MODE WITH NET PROFIT/LOSS CALCULATION
+    // ----------------------------------------------------
+    const wrapper = document.createElement('div');
+    wrapper.className = 'records-list-wrapper single-table-wrapper';
 
-    // Construct receipt link button badge next to details
-    const receiptBtn = tx.receipt ? `
-      <span class="badge" onclick="viewReceipt('${tx.receipt}')" style="background-color: rgba(16, 185, 129, 0.15); color: var(--income-color); border: 1px solid rgba(16, 185, 129, 0.25); cursor: pointer; margin-left: 0.5rem; display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; padding: 0.15rem 0.4rem; border-radius: 4px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(16, 185, 129, 0.25)'" onmouseout="this.style.backgroundColor='rgba(16, 185, 129, 0.15)'">
-        <i class="fa-solid fa-paperclip"></i> ${currentLanguage === 'si' ? 'ලදුපත' : (currentLanguage === 'en' ? 'Receipt' : 'ලදුපත (Receipt)')}
-      </span>
-    ` : '';
-
-    tr.innerHTML = `
-      <td style="${borderStyle} padding-left: 12px;">${tx.date}</td>
-      <td>${typeBadge}</td>
-      <td><strong>${tx.description || '-'}</strong> ${receiptBtn}</td>
-      <td><span class="badge">${catLabel}</span></td>
-      <td class="text-right ${amtClass}">${sign} LKR ${amtStr}</td>
-      <td class="text-center" style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
-        <button class="btn-edit-icon" onclick="startEditTransaction(${JSON.stringify(tx).replace(/"/g, '&quot;')})" title="${currentLanguage === 'si' ? 'සංස්කරණය කරන්න' : 'Edit'}">
-          <i class="fa-solid fa-pen-to-square"></i>
-        </button>
-        <button class="btn-danger-icon" onclick="deleteTransaction(${tx.id})" title="${currentLanguage === 'si' ? 'මකා දැමන්න' : 'Delete'}">
-          <i class="fa-solid fa-trash-can"></i>
-        </button>
-      </td>
+    const table = document.createElement('table');
+    table.className = 'records-table single-records-table';
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th style="width: 14%;">${t.thDate}</th>
+          <th style="width: 34%;">${t.thDesc}</th>
+          <th style="width: 22%;">${t.thCat}</th>
+          <th class="text-right" style="width: 20%;">${t.thAmt}</th>
+          <th class="text-center print-hide" style="width: 10%;">${t.thAct}</th>
+        </tr>
+      </thead>
     `;
-    transactionsList.appendChild(tr);
-  });
+
+    const tbody = document.createElement('tbody');
+
+    groupConfig.forEach(group => {
+      const txs = groups[group.type];
+      if (txs.length === 0) return;
+
+      const total = txs.reduce((sum, tx) => sum + tx.amount, 0);
+      if (group.type === 'income' || group.type === 'donation') grandTotalIncome += total;
+      if (group.type === 'expense') grandTotalExpense += total;
+
+      const recordsWord = currentLanguage === 'si' ? 'ගනුදෙනු' : (currentLanguage === 'en' ? 'records' : 'ගනුදෙනු (records)');
+      const totalStr = total.toLocaleString('en-LK', { minimumFractionDigits: 2 });
+
+      // Internal Section Header Row
+      const headerRow = document.createElement('tr');
+      headerRow.className = `single-table-section-header group-header-${group.type}`;
+      headerRow.innerHTML = `
+        <td colspan="5">
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="grouped-header-left" style="color: ${group.color};">
+              <i class="fa-solid ${group.icon}"></i>
+              <span>${group.headerLabel}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span class="grouped-header-count">${txs.length} ${recordsWord}</span>
+            </div>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(headerRow);
+
+      let rowNum = 0;
+
+      txs.forEach(tx => {
+        rowNum++;
+        const tr = document.createElement('tr');
+        const amtStr = tx.amount.toLocaleString('en-LK', { minimumFractionDigits: 2 });
+
+        // Category translation
+        let canonicalValue = tx.category;
+        for (const lang of ['si', 'en', 'both']) {
+          const allLangCats = [...categories[lang].income, ...categories[lang].donation, ...categories[lang].expense];
+          const match = allLangCats.find(c => c.value === tx.category || c.label === tx.category);
+          if (match) { canonicalValue = match.value; break; }
+        }
+        const currentLangCats = [...categories[currentLanguage].income, ...categories[currentLanguage].donation, ...categories[currentLanguage].expense];
+        const matchCurrent = currentLangCats.find(c => c.value === canonicalValue);
+        let catLabel = matchCurrent ? matchCurrent.label : tx.category;
+
+        const receiptBtn = tx.receipt ? `
+          <span class="badge" onclick="viewReceipt('${tx.receipt}')" style="background-color: rgba(16, 185, 129, 0.12); color: var(--income-color); border: 1px solid rgba(16, 185, 129, 0.2); cursor: pointer; margin-left: 0.4rem; font-size: 0.72rem; padding: 0.12rem 0.35rem;" onmouseover="this.style.backgroundColor='rgba(16, 185, 129, 0.2)'" onmouseout="this.style.backgroundColor='rgba(16, 185, 129, 0.12)'">
+            <i class="fa-solid fa-paperclip"></i>
+          </span>
+        ` : '';
+
+        tr.innerHTML = `
+          <td><span class="row-num">${rowNum}</span>${tx.date}</td>
+          <td title="${tx.description || '-'}"><strong>${tx.description || '-'}</strong>${receiptBtn}</td>
+          <td title="${catLabel}"><span class="badge">${catLabel}</span></td>
+          <td class="text-right ${group.amtClass}">${group.sign} LKR ${amtStr}</td>
+          <td class="text-center print-hide">
+            <div style="display: flex; gap: 0.35rem; justify-content: center; align-items: center;">
+              <button class="btn-edit-icon" onclick="startEditTransaction(${JSON.stringify(tx).replace(/"/g, '&quot;')})" title="${currentLanguage === 'si' ? 'සංස්කරණය කරන්න' : 'Edit'}">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button class="btn-danger-icon" onclick="deleteTransaction(${tx.id})" title="${currentLanguage === 'si' ? 'මකා දැමන්න' : 'Delete'}">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Internal Total Row
+      const totalRow = document.createElement('tr');
+      totalRow.className = `single-table-total-row group-total-${group.type}`;
+      totalRow.innerHTML = `
+        <td colspan="3" class="total-label" style="text-align: right; padding-right: 1.5rem !important;">
+          <i class="fa-solid fa-calculator" style="margin-right: 0.4rem; opacity: 0.6;"></i> <strong>${group.totalLabel}</strong>
+        </td>
+        <td class="text-right ${group.amtClass}"><strong>${group.sign} LKR ${totalStr}</strong></td>
+        <td class="print-hide"></td>
+      `;
+      tbody.appendChild(totalRow);
+    });
+
+    // GRAND TOTAL ROW (Net Profit / Loss)
+    const netBalance = grandTotalIncome - grandTotalExpense;
+    const isProfit = netBalance >= 0;
+    let profitLabel;
+    if (isProfit) {
+      profitLabel = currentLanguage === 'si' ? 'ශුද්ධ ලාභය' : (currentLanguage === 'en' ? 'Net Profit' : 'ශුද්ධ ලාභය (Net Profit)');
+    } else {
+      profitLabel = currentLanguage === 'si' ? 'ශුද්ධ අලාභය' : (currentLanguage === 'en' ? 'Net Loss' : 'ශුද්ධ අලාභය (Net Loss)');
+    }
+    
+    const grandTotalRow = document.createElement('tr');
+    grandTotalRow.className = `single-table-total-row`;
+    grandTotalRow.style.background = isProfit ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+    grandTotalRow.style.borderTop = `3px double ${isProfit ? 'var(--income-color)' : 'var(--expense-color)'}`;
+    grandTotalRow.style.borderBottom = `3px double ${isProfit ? 'var(--income-color)' : 'var(--expense-color)'}`;
+    grandTotalRow.innerHTML = `
+      <td colspan="3" class="total-label" style="text-align: right; padding-right: 1.5rem !important; color: ${isProfit ? 'var(--income-color)' : 'var(--expense-color)'}; font-size: 1.05rem;">
+        <strong>${profitLabel}</strong>
+      </td>
+      <td class="text-right" style="color: ${isProfit ? 'var(--income-color)' : 'var(--expense-color)'}; font-size: 1.1rem;">
+        <strong>${isProfit ? '+' : '-'} LKR ${Math.abs(netBalance).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</strong>
+      </td>
+      <td class="print-hide"></td>
+    `;
+    tbody.appendChild(grandTotalRow);
+
+    table.appendChild(tbody);
+    wrapper.appendChild(table);
+    tablesContainer.appendChild(wrapper);
+  } else {
+    // ----------------------------------------------------
+    // SEPARATE TABLE MODE (3 individual boxes)
+    // ----------------------------------------------------
+    groupConfig.forEach(group => {
+      const txs = groups[group.type];
+      if (txs.length === 0) return;
+
+      const total = txs.reduce((sum, tx) => sum + tx.amount, 0);
+      if (group.type === 'income' || group.type === 'donation') grandTotalIncome += total;
+      if (group.type === 'expense') grandTotalExpense += total;
+      
+      const recordsWord = currentLanguage === 'si' ? 'ගනුදෙනු' : (currentLanguage === 'en' ? 'records' : 'ගනුදෙනු (records)');
+      const totalStr = total.toLocaleString('en-LK', { minimumFractionDigits: 2 });
+
+      // Section container
+      const section = document.createElement('div');
+      section.className = 'grouped-table-section';
+
+      // Section header with total amount preview
+      const header = document.createElement('div');
+      header.className = 'grouped-table-header';
+      header.style.borderLeftColor = group.color;
+      header.innerHTML = `
+        <div class="grouped-header-left">
+          <i class="fa-solid ${group.icon}" style="color: ${group.color};"></i>
+          <span>${group.headerLabel}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span class="grouped-header-count">${txs.length} ${recordsWord}</span>
+          <span style="font-weight: 700; font-size: 0.9rem; color: ${group.color};">${group.sign} LKR ${totalStr}</span>
+        </div>
+      `;
+      section.appendChild(header);
+
+      // Table wrapper
+      const wrapper = document.createElement('div');
+      wrapper.className = 'records-list-wrapper';
+
+      // Table
+      const table = document.createElement('table');
+      table.className = 'records-table';
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th style="width: 14%;">${t.thDate}</th>
+            <th style="width: 34%;">${t.thDesc}</th>
+            <th style="width: 22%;">${t.thCat}</th>
+            <th class="text-right" style="width: 20%;">${t.thAmt}</th>
+            <th class="text-center print-hide" style="width: 10%;">${t.thAct}</th>
+          </tr>
+        </thead>
+      `;
+
+      const tbody = document.createElement('tbody');
+      let rowNum = 0;
+
+      txs.forEach(tx => {
+        rowNum++;
+        const tr = document.createElement('tr');
+        const amtStr = tx.amount.toLocaleString('en-LK', { minimumFractionDigits: 2 });
+
+        // Category translation
+        let canonicalValue = tx.category;
+        for (const lang of ['si', 'en', 'both']) {
+          const allLangCats = [...categories[lang].income, ...categories[lang].donation, ...categories[lang].expense];
+          const match = allLangCats.find(c => c.value === tx.category || c.label === tx.category);
+          if (match) { canonicalValue = match.value; break; }
+        }
+        const currentLangCats = [...categories[currentLanguage].income, ...categories[currentLanguage].donation, ...categories[currentLanguage].expense];
+        const matchCurrent = currentLangCats.find(c => c.value === canonicalValue);
+        let catLabel = matchCurrent ? matchCurrent.label : tx.category;
+
+        // Receipt badge
+        const receiptBtn = tx.receipt ? `
+          <span class="badge" onclick="viewReceipt('${tx.receipt}')" style="background-color: rgba(16, 185, 129, 0.12); color: var(--income-color); border: 1px solid rgba(16, 185, 129, 0.2); cursor: pointer; margin-left: 0.4rem; font-size: 0.72rem; padding: 0.12rem 0.35rem;" onmouseover="this.style.backgroundColor='rgba(16, 185, 129, 0.2)'" onmouseout="this.style.backgroundColor='rgba(16, 185, 129, 0.12)'">
+            <i class="fa-solid fa-paperclip"></i>
+          </span>
+        ` : '';
+
+        tr.innerHTML = `
+          <td><span class="row-num">${rowNum}</span>${tx.date}</td>
+          <td title="${tx.description || '-'}"><strong>${tx.description || '-'}</strong>${receiptBtn}</td>
+          <td title="${catLabel}"><span class="badge">${catLabel}</span></td>
+          <td class="text-right ${group.amtClass}">${group.sign} LKR ${amtStr}</td>
+          <td class="text-center print-hide">
+            <div style="display: flex; gap: 0.35rem; justify-content: center; align-items: center;">
+              <button class="btn-edit-icon" onclick="startEditTransaction(${JSON.stringify(tx).replace(/"/g, '&quot;')})" title="${currentLanguage === 'si' ? 'සංස්කරණය කරන්න' : 'Edit'}">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button class="btn-danger-icon" onclick="deleteTransaction(${tx.id})" title="${currentLanguage === 'si' ? 'මකා දැමන්න' : 'Delete'}">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Total row
+      const totalRow = document.createElement('tr');
+      totalRow.className = 'total-row';
+      totalRow.innerHTML = `
+        <td colspan="3" class="total-label"><i class="fa-solid fa-calculator" style="margin-right: 0.4rem; opacity: 0.6;"></i> <strong>${group.totalLabel}</strong></td>
+        <td class="text-right ${group.amtClass}"><strong>${group.sign} LKR ${totalStr}</strong></td>
+        <td class="print-hide"></td>
+      `;
+      tbody.appendChild(totalRow);
+
+      table.appendChild(tbody);
+      wrapper.appendChild(table);
+      section.appendChild(wrapper);
+      tablesContainer.appendChild(section);
+    });
+
+    // Add Net Profit/Loss standalone table at the bottom
+    const netBalance = grandTotalIncome - grandTotalExpense;
+    const isProfit = netBalance >= 0;
+    
+    let profitLabel;
+    if (isProfit) {
+      profitLabel = currentLanguage === 'si' ? 'ශුද්ධ ලාභය' : (currentLanguage === 'en' ? 'Net Profit' : 'ශුද්ධ ලාභය (Net Profit)');
+    } else {
+      profitLabel = currentLanguage === 'si' ? 'ශුද්ධ අලාභය' : (currentLanguage === 'en' ? 'Net Loss' : 'ශුද්ධ අලාභය (Net Loss)');
+    }
+
+    const netBalanceSection = document.createElement('div');
+    netBalanceSection.className = 'grouped-table-section';
+    netBalanceSection.style.border = `2px solid ${isProfit ? 'var(--income-color)' : 'var(--expense-color)'}`;
+
+    const nbHeader = document.createElement('div');
+    nbHeader.className = 'grouped-table-header';
+    nbHeader.style.background = isProfit ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+    nbHeader.style.borderLeft = 'none';
+    nbHeader.style.justifyContent = 'space-between';
+
+    nbHeader.innerHTML = `
+      <div class="grouped-header-left" style="color: ${isProfit ? 'var(--income-color)' : 'var(--expense-color)'}; font-size: 1.15rem;">
+        <i class="fa-solid fa-scale-balanced"></i>
+        <strong>${profitLabel}</strong>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span style="font-weight: 800; font-size: 1.25rem; color: ${isProfit ? 'var(--income-color)' : 'var(--expense-color)'};">${isProfit ? '+' : '-'} LKR ${Math.abs(netBalance).toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+      </div>
+    `;
+
+    netBalanceSection.appendChild(nbHeader);
+    tablesContainer.appendChild(netBalanceSection);
+  }
 }
 
 // Open Receipt View modal
@@ -1028,6 +1284,8 @@ function renderCharts(totals) {
 // Generate Printable Report (handles full history backups beautifully)
 async function executePrint() {
   const t = translations[currentLanguage];
+  const isSi = currentLanguage === 'si';
+  const isEn = currentLanguage === 'en';
   const printPeriodType = printPeriodSelect.value;
   
   let transactionsToPrint = latestTransactions;
@@ -1035,7 +1293,7 @@ async function executePrint() {
   
   // If printing full history, fetch all transactions from server
   if (printPeriodType === 'all') {
-    selectedPeriod = currentLanguage === 'si' ? 'සම්පූර්ණ ඉතිහාසයම' : (currentLanguage === 'en' ? 'All-time Full History' : 'සම්පූර්ණ ඉතිහාසයම (All-time)');
+    selectedPeriod = isSi ? 'සම්පූර්ණ ඉතිහාසයම' : (isEn ? 'All-time Full History' : 'සම්පූර්ණ ඉතිහාසයම (All-time)');
     try {
       const res = await fetch('/api/transactions');
       transactionsToPrint = await res.json();
@@ -1044,171 +1302,255 @@ async function executePrint() {
     }
   }
 
+  // Calculate totals
+  let totalIncome = 0, totalDonation = 0, totalExpense = 0;
+  transactionsToPrint.forEach(tx => {
+    if (tx.type === 'income') totalIncome += tx.amount;
+    else if (tx.type === 'donation') totalDonation += tx.amount;
+    else if (tx.type === 'expense') totalExpense += tx.amount;
+  });
+  const netBalance = (totalIncome + totalDonation) - totalExpense;
+
+  // Helper to format amounts
+  const fmt = (n) => n.toLocaleString('en-LK', { minimumFractionDigits: 2 });
+
+  // Helper to translate category
+  const translateCat = (catValue) => {
+    let canonical = catValue;
+    for (const lang of ['si', 'en', 'both']) {
+      const allCats = [...categories[lang].income, ...categories[lang].donation, ...categories[lang].expense];
+      const m = allCats.find(c => c.value === catValue || c.label === catValue);
+      if (m) { canonical = m.value; break; }
+    }
+    const currentCats = [...categories[currentLanguage].income, ...categories[currentLanguage].donation, ...categories[currentLanguage].expense];
+    const mc = currentCats.find(c => c.value === canonical);
+    return mc ? mc.label : catValue;
+  };
+
+  // Helper to aggregate transactions by category
+  const aggregateByCategory = (txs) => {
+    const map = {};
+    txs.forEach(tx => {
+      const catLabel = translateCat(tx.category);
+      if (!map[catLabel]) {
+        map[catLabel] = { label: catLabel, items: [], total: 0 };
+      }
+      map[catLabel].items.push(tx);
+      map[catLabel].total += tx.amount;
+    });
+    return Object.values(map);
+  };
+
   // Clear print area
   printArea.innerHTML = '';
-  
-  // 1. Construct Header
-  let printHTML = `
-    <div class="print-header">
+
+  // ═══════════════════════════════
+  // BUILD P&L STATEMENT HTML
+  // ═══════════════════════════════
+
+  let html = '';
+
+  // 1. P&L Header (Church Name / Title)
+  html += `
+    <div class="pnl-header">
       <h1>${printTitleInput.value}</h1>
-      <p>${currentLanguage === 'si' ? 'මුද්‍රිත දිනය' : 'Printed Date'}: ${new Date().toLocaleDateString()} | ${currentLanguage === 'si' ? 'කාල සීමාව' : 'Period'}: ${selectedPeriod}</p>
+      <div class="pnl-subtitle">
+        ${isSi ? 'මුද්‍රිත දිනය' : 'Printed'}: ${new Date().toLocaleDateString()}
+      </div>
+      <h2>${isSi ? 'ලාභ හා අලාභ ප්‍රකාශනය' : (isEn ? 'Profit & Loss Statement' : 'ලාභ හා අලාභ ප්‍රකාශනය (Profit & Loss Statement)')}</h2>
+      <div class="pnl-period">${isSi ? 'කාල සීමාව' : 'For the Period Ended'}: ${selectedPeriod}</div>
     </div>
   `;
-  
-  // 2. Add Stats Grid if checked (calculates totals of transactionsToPrint dynamically)
-  if (printShowCardsCheck.checked) {
-    let printIncome = 0;
-    let printDonation = 0;
-    let printExpense = 0;
-    
-    transactionsToPrint.forEach(tx => {
-      if (tx.type === 'income') printIncome += tx.amount;
-      else if (tx.type === 'donation') printDonation += tx.amount;
-      else if (tx.type === 'expense') printExpense += tx.amount;
-    });
-    
-    const printBalance = (printIncome + printDonation) - printExpense;
 
-    printHTML += `
-      <div class="print-grid">
-        <div class="print-card">
-          <span>${currentLanguage === 'si' ? 'මුළු ආදායම' : 'Total Income'}</span>
-          <h3>${formatLKR(printIncome)}</h3>
-        </div>
-        <div class="print-card">
-          <span>${currentLanguage === 'si' ? 'මුළු පරිත්‍යාග' : 'Total Donations'}</span>
-          <h3>${formatLKR(printDonation)}</h3>
-        </div>
-        <div class="print-card">
-          <span>${currentLanguage === 'si' ? 'මුළු වියදම' : 'Total Expense'}</span>
-          <h3>${formatLKR(printExpense)}</h3>
-        </div>
-        <div class="print-card">
-          <span>${currentLanguage === 'si' ? 'ඉතිරි ශේෂය' : 'Net Balance'}</span>
-          <h3>${formatLKR(printBalance)}</h3>
-        </div>
-      </div>
-    `;
-  }
-  
-  // 3. Add Chart image if checked (only makes sense for current selection or if data exists)
+  // 2. Chart (optional)
   if (printShowChartCheck.checked && expenseChartInstance) {
     const chartImgUrl = expenseChartCanvas.toDataURL('image/png');
-    printHTML += `
-      <div class="print-chart-container">
-        <h4 style="margin-bottom: 10px;">${currentLanguage === 'si' ? 'මූල්‍ය විශ්ලේෂණ ප්‍රස්ථාරය' : 'Financial Chart Breakdown'}</h4>
-        <img src="${chartImgUrl}" class="print-chart-image">
+    html += `
+      <div class="pnl-chart-container">
+        <img src="${chartImgUrl}">
       </div>
     `;
   }
-  
-  // 4. Add Transaction list table if checked
-  if (printShowTableCheck.checked) {
-    let tableHTML = `
-      <table class="print-table">
-        <thead>
-          <tr>
-            <th>${currentLanguage === 'si' ? 'දිනය' : 'Date'}</th>
-            <th>${currentLanguage === 'si' ? 'වර්ගය' : 'Type'}</th>
-            <th>${currentLanguage === 'si' ? 'විස්තරය' : 'Details'}</th>
-            <th>${currentLanguage === 'si' ? 'කාණ්ඩය' : 'Category'}</th>
-            <th class="text-right">${currentLanguage === 'si' ? 'මුදල' : 'Amount'}</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
-    
-    if (transactionsToPrint.length === 0) {
-      tableHTML += `<tr><td colspan="5" style="text-align: center;">${currentLanguage === 'si' ? 'කිසිදු දත්තයක් නොමැත' : 'No records available'}</td></tr>`;
-    } else {
-      transactionsToPrint.forEach(tx => {
-        const isIncome = tx.type === 'income';
-        const isDonation = tx.type === 'donation';
-        const amtClass = isIncome ? 'inc-amt' : (isDonation ? 'don-amt' : 'exp-amt');
-        const sign = (isIncome || isDonation) ? '+' : '-';
-        const amtStr = tx.amount.toLocaleString('en-LK', { minimumFractionDigits: 2 });
-        
-        let canonicalValue = tx.category;
-        for (const lang of ['si', 'en', 'both']) {
-          const allLangCats = [...categories[lang].income, ...categories[lang].donation, ...categories[lang].expense];
-          const match = allLangCats.find(c => c.value === tx.category || c.label === tx.category);
-          if (match) {
-            canonicalValue = match.value;
-            break;
-          }
-        }
-        const currentLangCats = [...categories[currentLanguage].income, ...categories[currentLanguage].donation, ...categories[currentLanguage].expense];
-        const matchCurrent = currentLangCats.find(c => c.value === canonicalValue);
-        let catLabel = matchCurrent ? matchCurrent.label : tx.category;
-        
-        // Render colored type badges in print layout
-        let printTypeBadge = '';
-        if (isIncome) printTypeBadge = `<span class="badge type-badge-income">${t.badgeIncome}</span>`;
-        else if (isDonation) printTypeBadge = `<span class="badge type-badge-donation">${t.badgeDonation}</span>`;
-        else printTypeBadge = `<span class="badge type-badge-expense">${t.badgeExpense}</span>`;
 
-        tableHTML += `
-          <tr>
-            <td>${tx.date}</td>
-            <td>${printTypeBadge}</td>
-            <td><strong>${tx.description || '-'}</strong></td>
-            <td>${catLabel}</td>
-            <td class="text-right ${amtClass}">${sign} LKR ${amtStr}</td>
-          </tr>
-        `;
+  // 3. P&L Table
+  if (printShowTableCheck.checked || printShowCardsCheck.checked) {
+    const incomeGroup = transactionsToPrint.filter(tx => tx.type === 'income');
+    const donationGroup = transactionsToPrint.filter(tx => tx.type === 'donation');
+    const expenseGroup = transactionsToPrint.filter(tx => tx.type === 'expense');
+
+    html += `<div class="records-list-wrapper single-table-wrapper" style="border: none; margin-top: 20px;">`;
+    html += `<table class="records-table single-records-table">`;
+    html += `
+      <thead>
+        <tr>
+          <th style="width: 50%; border-bottom: 2px solid var(--panel-border) !important;">${isSi ? 'විස්තරය (Description)' : 'Description'}</th>
+          <th style="width: 25%; text-align: right; border-bottom: 2px solid var(--panel-border) !important;">${isSi ? 'මුදල LKR (Amount)' : 'Amount (LKR)'}</th>
+        </tr>
+      </thead>
+      <tbody>
+    `;
+
+    // Helper for section headers
+    const getHeaderRow = (type, label, color, icon) => `
+      <tr class="single-table-section-header group-header-${type}">
+        <td colspan="2">
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="grouped-header-left" style="color: ${color}; font-size: 1.05rem;">
+              <i class="fa-solid ${icon}"></i>
+              <span>${label}</span>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+
+    // ── INCOME SECTION ──
+    if (incomeGroup.length > 0) {
+      const incomeCats = aggregateByCategory(incomeGroup);
+      const label = isSi ? 'ආදායම' : (isEn ? 'Income' : 'ආදායම (Income)');
+      // Use a darker green for print income instead of var(--income-color)
+      html += getHeaderRow('income', label, '#059669', 'fa-arrow-trend-up');
+
+      incomeCats.forEach(cat => {
+        if (cat.items.length === 1) {
+          html += `<tr><td>${cat.label}</td><td class="text-right inc-amt" style="color: #059669 !important; font-weight: 500;">${fmt(cat.total)}</td></tr>`;
+        } else {
+          cat.items.forEach(tx => {
+            const desc = tx.description ? ` — ${tx.description}` : '';
+            html += `<tr><td style="padding-left: 2rem;">${cat.label}${desc} <span style="color:#999; font-size:11px;">(${tx.date})</span></td><td class="text-right inc-amt" style="color: #059669 !important; font-weight: 500;">${fmt(tx.amount)}</td></tr>`;
+          });
+        }
       });
+
+      html += `
+        <tr class="single-table-total-row group-total-income">
+          <td class="total-label" style="text-align: right; padding-right: 1.5rem !important;">
+            <i class="fa-solid fa-calculator" style="margin-right: 0.4rem; opacity: 0.6;"></i> <strong>${isSi ? 'මුළු ආදායම' : (isEn ? 'Total Income' : 'මුළු ආදායම (Total Income)')}</strong>
+          </td>
+          <td class="text-right inc-amt" style="color: #059669 !important;"><strong>+ LKR ${fmt(totalIncome)}</strong></td>
+        </tr>
+      `;
+    }
+
+    // ── DONATION SECTION ──
+    if (donationGroup.length > 0) {
+      const donationCats = aggregateByCategory(donationGroup);
+      const label = isSi ? 'පරිත්‍යාග' : (isEn ? 'Donations' : 'පරිත්‍යාග (Donations)');
+      html += getHeaderRow('donation', label, '#3b82f6', 'fa-hand-holding-heart');
+
+      donationCats.forEach(cat => {
+        if (cat.items.length === 1) {
+          html += `<tr><td>${cat.label}</td><td class="text-right don-amt" style="color: #3b82f6 !important; font-weight: 500;">${fmt(cat.total)}</td></tr>`;
+        } else {
+          cat.items.forEach(tx => {
+            const desc = tx.description ? ` — ${tx.description}` : '';
+            html += `<tr><td style="padding-left: 2rem;">${cat.label}${desc} <span style="color:#999; font-size:11px;">(${tx.date})</span></td><td class="text-right don-amt" style="color: #3b82f6 !important; font-weight: 500;">${fmt(tx.amount)}</td></tr>`;
+          });
+        }
+      });
+
+      html += `
+        <tr class="single-table-total-row group-total-donation">
+          <td class="total-label" style="text-align: right; padding-right: 1.5rem !important;">
+            <i class="fa-solid fa-calculator" style="margin-right: 0.4rem; opacity: 0.6;"></i> <strong>${isSi ? 'මුළු පරිත්‍යාග' : (isEn ? 'Total Donations' : 'මුළු පරිත්‍යාග (Total Donations)')}</strong>
+          </td>
+          <td class="text-right don-amt" style="color: #3b82f6 !important;"><strong>+ LKR ${fmt(totalDonation)}</strong></td>
+        </tr>
+      `;
+    }
+
+    // ── EXPENSE SECTION ──
+    if (expenseGroup.length > 0) {
+      const expenseCats = aggregateByCategory(expenseGroup);
+      const label = isSi ? 'වියදම්' : (isEn ? 'Expenses' : 'වියදම් (Expenses)');
+      html += getHeaderRow('expense', label, '#ef4444', 'fa-arrow-trend-down');
+
+      expenseCats.forEach(cat => {
+        if (cat.items.length === 1) {
+          html += `<tr><td>${cat.label}</td><td class="text-right exp-amt" style="color: #ef4444 !important; font-weight: 500;">${fmt(cat.total)}</td></tr>`;
+        } else {
+          cat.items.forEach(tx => {
+            const desc = tx.description ? ` — ${tx.description}` : '';
+            html += `<tr><td style="padding-left: 2rem;">${cat.label}${desc} <span style="color:#999; font-size:11px;">(${tx.date})</span></td><td class="text-right exp-amt" style="color: #ef4444 !important; font-weight: 500;">${fmt(tx.amount)}</td></tr>`;
+          });
+        }
+      });
+
+      html += `
+        <tr class="single-table-total-row group-total-expense">
+          <td class="total-label" style="text-align: right; padding-right: 1.5rem !important;">
+            <i class="fa-solid fa-calculator" style="margin-right: 0.4rem; opacity: 0.6;"></i> <strong>${isSi ? 'මුළු වියදම' : (isEn ? 'Total Expenses' : 'මුළු වියදම (Total Expenses)')}</strong>
+          </td>
+          <td class="text-right exp-amt" style="color: #ef4444 !important;"><strong>- LKR ${fmt(totalExpense)}</strong></td>
+        </tr>
+      `;
+    }
+
+    // ── GRAND TOTAL: NET PROFIT / LOSS ──
+    const isProfit = netBalance >= 0;
+    let profitLabel;
+    if (isProfit) {
+      profitLabel = isSi ? 'ශුද්ධ ලාභය' : (isEn ? 'Net Profit' : 'ශුද්ධ ලාභය (Net Profit)');
+    } else {
+      profitLabel = isSi ? 'ශුද්ධ අලාභය' : (isEn ? 'Net Loss' : 'ශුද්ධ අලාභය (Net Loss)');
     }
     
-    tableHTML += `</tbody></table>`;
-    printHTML += tableHTML;
+    html += `
+      <tr class="single-table-total-row" style="background: ${isProfit ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'} !important; border-top: 3px double ${isProfit ? '#059669' : '#ef4444'} !important; border-bottom: 3px double ${isProfit ? '#059669' : '#ef4444'} !important;">
+        <td style="text-align: right; padding-right: 1.5rem !important; font-size: 1.05rem; color: ${isProfit ? '#059669' : '#ef4444'};">
+          <strong>${profitLabel}</strong>
+        </td>
+        <td class="text-right" style="font-size: 1.1rem; color: ${isProfit ? '#059669' : '#ef4444'};">
+          <strong>${isProfit ? '+' : '-'} LKR ${fmt(Math.abs(netBalance))}</strong>
+        </td>
+      </tr>
+    `;
+
+    html += `</tbody></table></div>`;
   }
-  
-  // 5. Add Receipt Images if checked
+
+  // 4. Receipt Images (appendix)
   if (printShowReceiptsCheck.checked) {
     const txsWithReceipts = transactionsToPrint.filter(tx => tx.receipt);
     if (txsWithReceipts.length > 0) {
-      printHTML += `
-        <div style="page-break-before: always; margin-top: 30px;" class="print-receipts-section">
-          <h3 style="border-bottom: 2px solid #000000; padding-bottom: 8px; margin-bottom: 20px; font-size: 16px;">
-            ${currentLanguage === 'si' ? 'අමුණා ඇති ලදුපත් / බිල්පත්' : (currentLanguage === 'en' ? 'Attached Receipts / Bills' : 'අමුණා ඇති ලදුපත් (Attached Receipts)')}
+      html += `
+        <div class="pnl-receipts-section">
+          <h3 class="pnl-receipts-title">
+            ${isSi ? 'අමුණා ඇති ලදුපත් / බිල්පත්' : (isEn ? 'Attached Receipts / Bills' : 'අමුණා ඇති ලදුපත් (Attached Receipts)')}
           </h3>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="pnl-receipts-grid">
       `;
       
       txsWithReceipts.forEach(tx => {
         const ext = tx.receipt.split('.').pop().toLowerCase();
-        // Only display images in the printable layout, as PDFs cannot be printed inside layout divs directly
         if (ext !== 'pdf') {
-          const amtStr = tx.amount.toLocaleString('en-LK', { minimumFractionDigits: 2 });
-          printHTML += `
-            <div style="border: 1px solid #cccccc; padding: 10px; border-radius: 6px; text-align: center; page-break-inside: avoid; background-color: #fafafa;">
-              <p style="font-size: 11px; margin-bottom: 8px; font-weight: bold; color: #333333;">
-                ${tx.date} - ${tx.description || tx.category} (LKR ${amtStr})
-              </p>
-               <img src="/uploads/${tx.receipt}" style="max-width: 100%; max-height: 280px; object-fit: contain; display: block; margin: 0 auto; border: 1px solid #eeeeee;">
+          const amtStr = fmt(tx.amount);
+          html += `
+            <div class="pnl-receipt-card">
+              <p>${tx.date} — ${tx.description || translateCat(tx.category)} (LKR ${amtStr})</p>
+              <img src="/uploads/${tx.receipt}">
             </div>
           `;
         }
       });
       
-      printHTML += `
+      html += `
           </div>
         </div>
       `;
     }
   }
 
-  // 6. Add Custom Remarks/Notes
+  // 5. Notes / Signature
   if (printNotesInput.value.trim() !== '') {
-    printHTML += `
-      <div class="print-notes">${printNotesInput.value.replace(/\n/g, '<br>')}</div>
-    `;
+    html += `<div class="pnl-notes">${printNotesInput.value.replace(/\n/g, '<br>')}</div>`;
   }
+
+  // 6. Footer
+  html += `<div class="pnl-footer">${isSi ? 'පරිගණක සකසන ලද වාර්තාව' : 'Computer Generated Report'} | ${new Date().toLocaleString()}</div>`;
   
-  // Insert to print area
-  printArea.innerHTML = printHTML;
-  
-  // Hide modal and trigger print
+  // Insert and print
+  printArea.innerHTML = html;
   printModal.style.display = 'none';
   window.print();
 }
