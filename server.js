@@ -243,6 +243,19 @@ app.put('/api/transactions/:id', (req, res) => {
 // Export database as CSV
 app.get('/api/export-csv', (req, res) => {
   const lang = req.query.lang || 'si';
+  const year = req.query.year;
+  const month = req.query.month;
+
+  let dateFilter = '';
+  const params = [];
+
+  if (year && month) {
+    dateFilter = 'WHERE strftime("%Y", date) = ? AND strftime("%m", date) = ?';
+    params.push(year, month.padStart(2, '0'));
+  } else if (year) {
+    dateFilter = 'WHERE strftime("%Y", date) = ?';
+    params.push(year);
+  }
 
   // Headers
   let csvContent = 'ID,Type,Category,Amount (LKR),Date,Description,ReceiptFile\n';
@@ -277,7 +290,9 @@ app.get('/api/export-csv', (req, res) => {
     'Other Expense': { si: 'වෙනත් වියදම්', en: 'Other Expense', both: 'වෙනත් වියදම් (Other)' }
   };
 
-  db.all('SELECT id, type, category, amount, date, description, receipt FROM transactions ORDER BY date DESC', [], (err, rows) => {
+  const sql = `SELECT id, type, category, amount, date, description, receipt FROM transactions ${dateFilter} ORDER BY date DESC`;
+  
+  db.all(sql, params, (err, rows) => {
     if (err) {
       res.status(500).send('Error retrieving data for export');
       return;

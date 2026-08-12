@@ -491,7 +491,12 @@ confirmPrintBtn.addEventListener('click', executePrint);
 exportBtn.addEventListener('click', async (e) => {
   e.preventDefault();
   try {
-    const res = await fetch(`/api/export-csv?lang=${currentLanguage}&t=${Date.now()}`);
+    const month = filterMonth.value;
+    const year = filterYear.value;
+    let queryParams = `?lang=${currentLanguage}&t=${Date.now()}&year=${year}`;
+    if (month) queryParams += `&month=${month}`;
+
+    const res = await fetch(`/api/export-csv${queryParams}`);
     if (!res.ok) throw new Error('Download failed');
     
     // Read response as text
