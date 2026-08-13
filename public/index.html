@@ -25,8 +25,15 @@
   <div class="app-container">
     <!-- Header -->
     <header class="main-header">
-      <div class="logo-area">
-        <i class="fa-solid fa-church logo-icon"></i>
+      <div class="logo-area" id="logoAreaContainer" style="cursor: pointer; position: relative;" title="Click to change logo">
+        <div id="logoWrapper" class="logo-wrapper">
+          <i class="fa-solid fa-church logo-icon" id="defaultLogoIcon"></i>
+          <img id="customLogoImg" src="" alt="Church Logo" style="display: none; height: 50px; width: 50px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div class="logo-edit-overlay" style="position: absolute; top: 0; left: 0; width: 50px; height: 50px; border-radius: 8px; background: rgba(0,0,0,0.5); color: white; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s;">
+            <i class="fa-solid fa-pen"></i>
+          </div>
+        </div>
+        <input type="file" id="logoUploadInput" accept="image/*" style="display: none;">
         <div>
           <h1>පල්ලියේ මූල්‍ය කළමනාකරණය</h1>
           <p class="subtitle">Church Finance Portal</p>

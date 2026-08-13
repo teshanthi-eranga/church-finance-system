@@ -1247,3 +1247,14 @@ body.light-theme .grouped-header-count {
     padding: 10px !important;
   }
 }
+
+/* Logo Upload Styles */
+.logo-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.logo-area:hover .logo-edit-overlay {
+  opacity: 1 !important;
+}

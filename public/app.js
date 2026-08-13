@@ -1649,3 +1649,81 @@ async function deleteTransaction(id) {
     console.error('Error deleting transaction:', err);
   }
 }
+
+// ==========================================
+// Custom Logo Upload Logic
+// ==========================================
+const logoAreaContainer = document.getElementById('logoAreaContainer');
+const logoUploadInput = document.getElementById('logoUploadInput');
+const customLogoImg = document.getElementById('customLogoImg');
+const defaultLogoIcon = document.getElementById('defaultLogoIcon');
+
+// Load saved logo on startup
+function loadCustomLogo() {
+  const savedLogo = localStorage.getItem('churchCustomLogo');
+  if (savedLogo) {
+    applyLogo(savedLogo);
+  }
+}
+
+function applyLogo(src) {
+  customLogoImg.src = src;
+  customLogoImg.style.display = 'block';
+  defaultLogoIcon.style.display = 'none';
+}
+
+if (logoAreaContainer && logoUploadInput) {
+  logoAreaContainer.addEventListener('click', () => {
+    logoUploadInput.click();
+  });
+
+  logoUploadInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const img = new Image();
+      img.onload = function() {
+        // Resize image if too large (max 300px)
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const MAX_SIZE = 300;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Get compressed base64
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        
+        try {
+          localStorage.setItem('churchCustomLogo', dataUrl);
+          applyLogo(dataUrl);
+        } catch (err) {
+          console.error('Error saving logo to localStorage:', err);
+          alert(currentLanguage === 'si' ? 'පින්තූරයේ ප්‍රමාණය වැඩියි!' : 'Image is too large!');
+        }
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Call on load
+loadCustomLogo();
